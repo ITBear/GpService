@@ -2,7 +2,7 @@
 
 namespace GPlatform {
 
-TYPE_STRUCT_IMPLEMENT(GpArgBaseDesc, "56e26e3d-5f63-4dbc-b7c1-d23586c623ec"_sv, GP_MODULE_UUID)
+TYPE_STRUCT_IMPLEMENT(GpArgBaseDesc, GP_MODULE_UUID)
 
 GpArgBaseDesc::GpArgBaseDesc (void) noexcept
 {

@@ -8,7 +8,7 @@ class GPSERVICE_API GpServiceCfgTaskManagerDesc: public GpTypeStructBase
 {
 public:
     CLASS_DECLARE_DEFAULTS(GpServiceCfgTaskManagerDesc)
-    TYPE_STRUCT_DECLARE()
+    TYPE_STRUCT_DECLARE("53538c79-f429-4ac3-8c13-b1a2dab02f99"_sv)
 
 public:
                             GpServiceCfgTaskManagerDesc     (void) noexcept;

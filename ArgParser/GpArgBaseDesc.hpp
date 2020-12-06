@@ -8,7 +8,7 @@ class GPSERVICE_API GpArgBaseDesc: public GpTypeStructBase
 {
 public:
     CLASS_DECLARE_DEFAULTS(GpArgBaseDesc)
-    TYPE_STRUCT_DECLARE()
+    TYPE_STRUCT_DECLARE("56e26e3d-5f63-4dbc-b7c1-d23586c623ec"_sv)
 
 public:
                             GpArgBaseDesc   (void) noexcept;

@@ -2,7 +2,7 @@
 
 namespace GPlatform {
 
-TYPE_STRUCT_IMPLEMENT(GpServiceCfgTaskManagerDesc, "53538c79-f429-4ac3-8c13-b1a2dab02f99"_sv, GP_MODULE_UUID)
+TYPE_STRUCT_IMPLEMENT(GpServiceCfgTaskManagerDesc, GP_MODULE_UUID)
 
 GpServiceCfgTaskManagerDesc::GpServiceCfgTaskManagerDesc (void) noexcept
 {

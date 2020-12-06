@@ -101,6 +101,11 @@ void    GpService::SSystemSignalsHandler (int aSignalId) noexcept
         {
             SInterrupt();
         } break;
+        case SIGPIPE:
+        {
+            std::runtime_error e("SIGPIPE received");
+            GpExceptionsSink::SSink(e);
+        } break;
         case SIGABRT:   [[fallthrough]];    //Abnormal termination of the program, such as a call to abort.
         case SIGFPE:    [[fallthrough]];    //An erroneous arithmetic operation, such as a divide by zero or an operation resulting in overflow
         case SIGILL:    [[fallthrough]];    //Detection of an illegal instruction.
@@ -213,7 +218,9 @@ void    GpService::SetSystemSignalsHandler (void)
     sigaction(SIGINT,   &sa, nullptr);
     sigaction(SIGKILL,  &sa, nullptr);
     sigaction(SIGSEGV,  &sa, nullptr);
-    signal(SIGPIPE, SIG_IGN);
+    sigaction(SIGPIPE,  &sa, nullptr);
+
+    //signal(SIGPIPE, SIG_IGN);
 #elif defined(GP_OS_WINDOWS)
     signal(SIGTERM, SSystemSignalsHandler);
     signal(SIGINT,  SSystemSignalsHandler);
