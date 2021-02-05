@@ -41,19 +41,21 @@ void    GpArgParser::SFillOptions (OptDescT&            aOptDesc,
 
         switch (propType)
         {
-            case GpType::S_INT_8:
-            case GpType::U_INT_8:
-            case GpType::S_INT_16:
-            case GpType::U_INT_16:
-            case GpType::S_INT_32:
-            case GpType::U_INT_32:
-            case GpType::S_INT_64:
-            case GpType::U_INT_64:
-            case GpType::DOUBLE:
-            case GpType::FLOAT:
-            case GpType::UUID:
-            case GpType::STRING:
-            case GpType::BLOB:
+            case GpType::S_INT_8:    [[fallthrough]];
+            case GpType::U_INT_8:    [[fallthrough]];
+            case GpType::S_INT_16:   [[fallthrough]];
+            case GpType::U_INT_16:   [[fallthrough]];
+            case GpType::S_INT_32:   [[fallthrough]];
+            case GpType::U_INT_32:   [[fallthrough]];
+            case GpType::S_INT_64:   [[fallthrough]];
+            case GpType::U_INT_64:   [[fallthrough]];
+            case GpType::UNIX_TS_S:  [[fallthrough]];
+            case GpType::UNIX_TS_MS: [[fallthrough]];
+            case GpType::DOUBLE:     [[fallthrough]];
+            case GpType::FLOAT:      [[fallthrough]];
+            case GpType::UUID:       [[fallthrough]];
+            case GpType::STRING:     [[fallthrough]];
+            case GpType::BLOB:       [[fallthrough]];
             case GpType::ENUM:
             {
                 if (propContainer == GpTypeContainer::NO)
@@ -84,9 +86,9 @@ void    GpArgParser::SFillOptions (OptDescT&            aOptDesc,
                     THROW_GPE("Unsupported container type '"_sv + GpTypeContainer::SToString(propContainer) + "', property name '"_sv + propName + "'"_sv);
                 }
             } break;
-            case GpType::STRUCT:
-            case GpType::STRUCT_SP:
-            case GpType::NOT_SET:
+            case GpType::STRUCT:    [[fallthrough]];
+            case GpType::STRUCT_SP: [[fallthrough]];
+            case GpType::NOT_SET:   [[fallthrough]];
             default:
             {
                 THROW_GPE("Unsupported type '"_sv + GpType::SToString(propType) + "', property name '"_sv + propName + "'"_sv);
@@ -166,7 +168,9 @@ void    GpArgParser::SParseOptions (const size_t        aArgc,
                         GpRawPtrCharR   sv  = {v.data(), v.size()};
                         propInfo.Value_UInt32(aOut) = NumOps::SConvert<u_int_32>(StrOps::SToUI64(sv));
                     } break;
-                    case GpType::S_INT_64:
+                    case GpType::S_INT_64:  [[fallthrough]];
+                    case GpType::UNIX_TS_S: [[fallthrough]];
+                    case GpType::UNIX_TS_MS:
                     {
                         const auto&     v   = optVal.as<boost::container::string>();
                         GpRawPtrCharR   sv  = {v.data(), v.size()};
@@ -270,7 +274,9 @@ void    GpArgParser::SParseOptions (const size_t        aArgc,
                         auto& vec = propInfo.Value_Vec_UInt32(aOut); vec.clear();
                         for (const auto& e: v) vec.emplace_back(NumOps::SConvert<u_int_32>(StrOps::SToUI64({e.data(), e.size()})));
                     } break;
-                    case GpType::S_INT_64:
+                    case GpType::S_INT_64:  [[fallthrough]];
+                    case GpType::UNIX_TS_S: [[fallthrough]];
+                    case GpType::UNIX_TS_MS:
                     {
                         auto& vec = propInfo.Value_Vec_SInt64(aOut); vec.clear();
                         for (const auto& e: v) vec.emplace_back(NumOps::SConvert<s_int_64>(StrOps::SToSI64({e.data(), e.size()})));

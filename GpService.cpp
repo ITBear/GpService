@@ -53,7 +53,7 @@ int GpService::SRun (const size_t                       aArgc,
 void    GpService::SWaitForInterrupt (void) noexcept
 {
     GpService::sServiceCondVar.WaitForWakeup();
-    //std::this_thread::sleep_for(std::chrono::seconds(5));
+    //std::this_thread::sleep_for(std::chrono::seconds(3));
 }
 
 void    GpService::SInterrupt (void) noexcept
@@ -262,6 +262,9 @@ void    GpService::StartMainTask (void)
 {
     GpServiceMainTask::SP mainTask = CreateMainTask(iCmdLineArgsDesc.VC(), iServiceCfgDesc);
     iTaskScheduler->AddTaskToReady(mainTask);
+
+    //TODO: add dependencies to main task
+    std::this_thread::sleep_for(std::chrono::milliseconds(600));
 }
 
 void    GpService::StartTasks (const GpTaskFactory::C::Vec::SP& aTaskFactories)
@@ -273,3 +276,36 @@ void    GpService::StartTasks (const GpTaskFactory::C::Vec::SP& aTaskFactories)
 }
 
 }//namespace GPlatform
+
+/*
+<?xml version="1.0" encoding="UTF-8"?>
+<body xmlns="buyerInfoResponse">
+
+
+
+
+
+    <balance>
+        <balance balanceTypeId="0">231</balance>
+        <activeBalance balanceTypeId="0">231</activeBalance>
+        <inactiveBalance balanceTypeId="0">0</inactiveBalance>
+        <balance balanceTypeId="15270">0</balance>
+        <activeBalance balanceTypeId="15270">0</activeBalance>
+        <inactiveBalance balanceTypeId="15270">0</inactiveBalance>
+        <oddMoneyBalance>414</oddMoneyBalance>
+        <oddMoneyFlags>0</oddMoneyFlags>
+    </balance>
+
+
+</body>
+
+<?xml version="1.0" encoding="UTF-8"?>
+<body *xmlns="buyerInfoResponse">
+
+
+
+
+
+   <balance/>
+</body>
+*/
