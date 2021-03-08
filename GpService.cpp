@@ -30,8 +30,11 @@ int GpService::SRun (const size_t                       aArgc,
 {
     try
     {
-        THROW_GPE_COND_CHECK_M(GpService::sService.IsNULL(),
-                               "GpService::SStart already called"_sv);
+        THROW_GPE_COND
+        (
+            GpService::sService.IsNULL(),
+            "GpService::SStart already called"_sv
+        );
 
         GpService::sService = aServiceFactory->NewInstance();
         GpService::sService->Start(NumOps::SConvert<size_t>(aArgc), aArgv, aTaskFactories);
@@ -171,7 +174,7 @@ void    GpService::Stop (void)
             return ForkResT::CHILD;
         }
 
-        THROW_GPE_COND_CHECK_M(pid > 0, "Fork failed (stage 2)"_sv);
+        THROW_GPE_COND(pid > 0, "Fork failed (stage 2)"_sv);
     } else if (pid > 0)//ForkResT::PARENT
     {
         return ForkResT::PARENT;

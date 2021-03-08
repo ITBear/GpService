@@ -35,9 +35,12 @@ void    GpArgParser::SFillOptions (OptDescT&            aOptDesc,
         const GpType::EnumT             propType        = propInfo.Type();
         const GpTypeContainer::EnumT    propContainer   = propInfo.Container();
 
-        THROW_GPE_COND_CHECK_M(   (propContainer == GpTypeContainer::NO)
-                               || (propContainer == GpTypeContainer::VECTOR),
-                               "Property '"_sv + propName + "' container must be NO or VECTOR"_sv);
+        THROW_GPE_COND
+        (
+               (propContainer == GpTypeContainer::NO)
+            || (propContainer == GpTypeContainer::VECTOR),
+            "Property '"_sv + propName + "' container must be NO or VECTOR"_sv
+        );
 
         switch (propType)
         {
@@ -126,7 +129,11 @@ void    GpArgParser::SParseOptions (const size_t        aArgc,
             propInfo.Value_Bool(aOut) = true;
         } else
         {
-            THROW_GPE_COND_CHECK_M(!optVal.empty(), "Empty value for property '"_sv + propName + "'"_sv);
+            THROW_GPE_COND
+            (
+                !optVal.empty(),
+                "Empty value for property '"_sv + propName + "'"_sv
+            );
 
             if (propContainer == GpTypeContainer::NO)
             {
@@ -210,7 +217,7 @@ void    GpArgParser::SParseOptions (const size_t        aArgc,
                     {
                         const auto&     v   = optVal.as<boost::container::string>();
                         GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_BLOB(aOut)   = StrOps::SToBytes(sv);
+                        propInfo.Value_BLOB(aOut)   = StrOps::SToBytesHex(sv);
                     } break;
                     case GpType::ENUM:
                     {
@@ -313,7 +320,7 @@ void    GpArgParser::SParseOptions (const size_t        aArgc,
                     case GpType::BLOB:
                     {
                         auto& vec = propInfo.Value_Vec_BLOB(aOut); vec.clear();
-                        for (const auto& e: v) vec.emplace_back(StrOps::SToBytes({e.data(), e.size()}));
+                        for (const auto& e: v) vec.emplace_back(StrOps::SToBytesHex({e.data(), e.size()}));
                     } break;
                     case GpType::ENUM:[[fallthrough]];
                     case GpType::ENUM_FLAGS:[[fallthrough]];
