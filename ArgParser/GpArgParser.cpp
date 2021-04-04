@@ -39,7 +39,7 @@ void    GpArgParser::SFillOptions (OptDescT&            aOptDesc,
         (
                (propContainer == GpTypeContainer::NO)
             || (propContainer == GpTypeContainer::VECTOR),
-            "Property '"_sv + propName + "' container must be NO or VECTOR"_sv
+            [&](){return "Property '"_sv + propName + "' container must be NO or VECTOR"_sv;}
         );
 
         switch (propType)
@@ -132,7 +132,7 @@ void    GpArgParser::SParseOptions (const size_t        aArgc,
             THROW_GPE_COND
             (
                 !optVal.empty(),
-                "Empty value for property '"_sv + propName + "'"_sv
+                [&](){return "Empty value for property '"_sv + propName + "'"_sv;}
             );
 
             if (propContainer == GpTypeContainer::NO)

@@ -23,10 +23,13 @@ GpService::~GpService (void) noexcept
 {
 }
 
-int GpService::SRun (const size_t                       aArgc,
-                     char**                             aArgv,
-                     const GpServiceFactory::SP         aServiceFactory,
-                     const GpTaskFactory::C::Vec::SP&   aTaskFactories) noexcept
+int GpService::SRun
+(
+    const size_t                        aArgc,
+    char**                              aArgv,
+    const GpServiceFactory::SP          aServiceFactory,
+    const GpTaskFactory::C::Vec::SP&    aTaskFactories
+) noexcept
 {
     try
     {
@@ -140,9 +143,12 @@ void    GpService::SSystemSignalsHandler (int aSignalId) noexcept
 #endif
 }
 
-void    GpService::Start (const size_t                      aArgc,
-                          char**                            aArgv,
-                          const GpTaskFactory::C::Vec::SP&  aTaskFactories)
+void    GpService::Start
+(
+    const size_t                        aArgc,
+    char**                              aArgv,
+    const GpTaskFactory::C::Vec::SP&    aTaskFactories
+)
 {
     GpSRandom::S().SetSeedFromRD();
 
@@ -188,7 +194,11 @@ void    GpService::Stop (void)
     return ForkResT::CHILD;
 }*/
 
-void    GpService::ParseCmdLineArgs (const size_t aArgc, char** aArgv)
+void    GpService::ParseCmdLineArgs
+(
+    const size_t    aArgc,
+    char**          aArgv
+)
 {
     iCmdLineArgsDesc = CreateCmdLineArgsDesc();
     GpArgParser::SParse(aArgc, aArgv, iCmdLineArgsDesc.V(), "Service arguments"_sv);
@@ -200,12 +210,15 @@ void    GpService::ReadConfig (void)
 
     std::string_view cfgFileName = iCmdLineArgsDesc->CfgFile();
 
-    if (cfgFileName.length() > 0)
-    {
-        GpBytesArray    fileData    = GpFileUtils::SReadAll(cfgFileName);
-        std::string     fileDataStr = std::string(GpRawPtrCharR(fileData).AsStringView());
-        GpJsonMapper::SFromJsonInsitu(fileDataStr, iServiceCfgDesc.V());
-    }
+    THROW_GPE_COND
+    (
+        cfgFileName.length() > 0,
+        "No config file was set..."_sv
+    );
+
+    GpBytesArray    fileData    = GpFileUtils::SReadAll(cfgFileName);
+    std::string     fileDataStr = std::string(GpRawPtrCharR(fileData).AsStringView());
+    GpJsonMapper::SFromJsonInsitu(fileDataStr, iServiceCfgDesc.V());
 }
 
 void    GpService::SetSystemSignalsHandler (void)
@@ -279,36 +292,3 @@ void    GpService::StartTasks (const GpTaskFactory::C::Vec::SP& aTaskFactories)
 }
 
 }//namespace GPlatform
-
-/*
-<?xml version="1.0" encoding="UTF-8"?>
-<body xmlns="buyerInfoResponse">
-
-
-
-
-
-    <balance>
-        <balance balanceTypeId="0">231</balance>
-        <activeBalance balanceTypeId="0">231</activeBalance>
-        <inactiveBalance balanceTypeId="0">0</inactiveBalance>
-        <balance balanceTypeId="15270">0</balance>
-        <activeBalance balanceTypeId="15270">0</activeBalance>
-        <inactiveBalance balanceTypeId="15270">0</inactiveBalance>
-        <oddMoneyBalance>414</oddMoneyBalance>
-        <oddMoneyFlags>0</oddMoneyFlags>
-    </balance>
-
-
-</body>
-
-<?xml version="1.0" encoding="UTF-8"?>
-<body *xmlns="buyerInfoResponse">
-
-
-
-
-
-   <balance/>
-</body>
-*/

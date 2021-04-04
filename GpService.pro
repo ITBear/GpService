@@ -15,7 +15,7 @@ include(../../QtGlobalPro.pri)
 os_windows{
 	GP_CORE_LIB_V		= 2
 	GP_JSON_LIB_V		= 0
-	BOOST_LIB_POSTFIX	= -mgw82-mt-x64-1_72
+	BOOST_LIB_POSTFIX	= -mgw82-mt-x64-1_75
 }
 
 os_linux{
