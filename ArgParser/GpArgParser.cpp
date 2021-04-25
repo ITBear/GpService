@@ -2,6 +2,7 @@
 
 GP_WARNING_PUSH()
 GP_WARNING_DISABLE(conversion)
+GP_WARNING_DISABLE(shadow)
 
 #include <boost/program_options.hpp>
 #include <boost/container/string.hpp>
@@ -10,10 +11,13 @@ GP_WARNING_POP()
 
 namespace GPlatform {
 
-void    GpArgParser::SParse (const size_t       aArgc,
-                             char**             aArgv,
-                             GpArgBaseDesc&     aOut,
-                             std::string_view   aDescText)
+void    GpArgParser::SParse
+(
+    const size_t        aArgc,
+    char**              aArgv,
+    GpArgBaseDesc&      aOut,
+    std::string_view    aDescText
+)
 {
     std::string descText(aDescText);
     OptDescT optDesc(descText);
@@ -22,8 +26,11 @@ void    GpArgParser::SParse (const size_t       aArgc,
     SParseOptions(aArgc, aArgv, optDesc, aOut);
 }
 
-void    GpArgParser::SFillOptions (OptDescT&            aOptDesc,
-                                   const GpArgBaseDesc& aOut)
+void    GpArgParser::SFillOptions
+(
+    OptDescT&               aOptDesc,
+    const GpArgBaseDesc&    aOut
+)
 {
     aOptDesc.add_options()("help", "Show help message");
 
@@ -100,10 +107,13 @@ void    GpArgParser::SFillOptions (OptDescT&            aOptDesc,
     }
 }
 
-void    GpArgParser::SParseOptions (const size_t        aArgc,
-                                    char**              aArgv,
-                                    const OptDescT&     aOptDesc,
-                                    GpArgBaseDesc&      aOut)
+void    GpArgParser::SParseOptions
+(
+    const size_t        aArgc,
+    char**              aArgv,
+    const OptDescT&     aOptDesc,
+    GpArgBaseDesc&      aOut
+)
 {
     boost::program_options::variables_map vm;
     boost::program_options::store(boost::program_options::parse_command_line(NumOps::SConvert<int>(aArgc), aArgv, aOptDesc), vm);
