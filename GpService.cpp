@@ -39,6 +39,10 @@ int GpService::SRun
             "GpService::SStart already called"_sv
         );
 
+#if defined(GP_USE_TIMERS)
+        GpTimersManager::SStart();
+#endif
+
         GpService::sService = aServiceFactory->NewInstance();
         GpService::sService->Start(NumOps::SConvert<size_t>(aArgc), aArgv, aTaskFactories);
         SWaitForInterrupt();
@@ -72,6 +76,10 @@ int GpService::SStop (void) noexcept
     try
     {
         std::scoped_lock lock(GpService::sServiceMutex);
+
+#if defined(GP_USE_TIMERS)
+        GpTimersManager::SStop();
+#endif
 
         if (GpService::sService.IsNotNULL())
         {
