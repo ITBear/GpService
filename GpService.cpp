@@ -28,9 +28,12 @@ int GpService::SRun
     const size_t                        aArgc,
     char**                              aArgv,
     const GpServiceFactory::SP          aServiceFactory,
-    const GpTaskFactory::C::Vec::SP&    aTaskFactories
-) noexcept
+    const GpTaskFactory::C::MapStr::SP& aTaskFactories,
+    std::string_view                    aMainTaskName
+)
 {
+    int exitCode = EXIT_FAILURE;
+
     try
     {
         THROW_GPE_COND
@@ -44,9 +47,9 @@ int GpService::SRun
 #endif
 
         GpService::sService = aServiceFactory->NewInstance();
-        GpService::sService->Start(NumOps::SConvert<size_t>(aArgc), aArgv, aTaskFactories);
+        GpService::sService->Start(NumOps::SConvert<size_t>(aArgc), aArgv, aTaskFactories, aMainTaskName);
         SWaitForInterrupt();
-        return SStop();
+        exitCode = SStop();
     } catch (const std::exception& e)
     {
         GpExceptionsSink::SSink(e);
@@ -57,13 +60,16 @@ int GpService::SRun
         SStop();
     }
 
-    return EXIT_FAILURE;
+    std::cout << "[GpService::SRun]: Done (exit code "_sv << exitCode << ")\n"_sv;
+    std::cout.flush();
+
+    return exitCode;
 }
 
 void    GpService::SWaitForInterrupt (void) noexcept
 {
     GpService::sServiceCondVar.WaitForWakeup();
-    //std::this_thread::sleep_for(std::chrono::seconds(3));
+    //std::this_thread::sleep_for(std::chrono::seconds(10));
 }
 
 void    GpService::SInterrupt (void) noexcept
@@ -155,7 +161,8 @@ void    GpService::Start
 (
     const size_t                        aArgc,
     char**                              aArgv,
-    const GpTaskFactory::C::Vec::SP&    aTaskFactories
+    const GpTaskFactory::C::MapStr::SP& aTaskFactories,
+    std::string_view                    aMainTaskName
 )
 {
     GpSRandom::S().SetSeedFromRD();
@@ -164,7 +171,7 @@ void    GpService::Start
     ReadConfig();
     SetSystemSignalsHandler();
     StartTaskScheduler();
-    StartMainTask();
+    StartMainTask(aMainTaskName);
     StartTasks(aTaskFactories);
 }
 
@@ -226,7 +233,7 @@ void    GpService::ReadConfig (void)
 
     GpBytesArray    fileData    = GpFileUtils::SReadAll(cfgFileName);
     std::string     fileDataStr = std::string(GpRawPtrCharR(fileData).AsStringView());
-    GpJsonMapper::SFromJsonInsitu(fileDataStr, iServiceCfgDesc.V());
+    GpJsonMapper::SFromJsonInsitu(fileDataStr, iServiceCfgDesc.V(), {});
 }
 
 void    GpService::SetSystemSignalsHandler (void)
@@ -262,12 +269,18 @@ void    GpService::StartTaskScheduler (void)
     const auto& serviceCfg      = iServiceCfgDesc.VCn();
     const auto& taskManagerCfg  = serviceCfg.TaskManager();
 
-    GpTaskFiberManager::S().Init(taskManagerCfg.MaxFibersCnt(),
-                                 taskManagerCfg.FiberStackSize());
+    GpTaskFiberManager::S().Init
+    (
+        taskManagerCfg.MaxFibersCnt(),
+        taskManagerCfg.FiberStackSize()
+    );
 
     iTaskScheduler = MakeSP<GpTaskScheduler>();
-    iTaskScheduler.Vn().Start(iTaskScheduler,
-                              taskManagerCfg.ExecutorsCnt());
+    iTaskScheduler.Vn().Start
+    (
+        iTaskScheduler,
+        taskManagerCfg.ExecutorsCnt()
+    );
 }
 
 void    GpService::StopTaskScheduler (void) noexcept
@@ -279,23 +292,48 @@ void    GpService::StopTaskScheduler (void) noexcept
 
     iTaskScheduler.Vn().RequestStop();
     iTaskScheduler.Vn().Join();
+    iTaskScheduler.Vn().AfterJoin();
     iTaskScheduler.Clear();
 }
 
-void    GpService::StartMainTask (void)
+void    GpService::StartMainTask (std::string_view aMainTaskName)
 {
-    GpServiceMainTask::SP mainTask = CreateMainTask(iCmdLineArgsDesc.VC(), iServiceCfgDesc);
-    iTaskScheduler->AddTaskToReady(mainTask);
+    GpTask::SP startTask = MakeSP<GpTaskFiberLambda>
+    (
+        [&]()
+        {
+            GpTaskFiberBarrier::SP taskBarrier = MakeSP<GpTaskFiberBarrier>(1_cnt);
 
-    //TODO: add dependencies to main task
-    std::this_thread::sleep_for(std::chrono::milliseconds(600));
+            GpServiceMainTask::SP mainTask = CreateMainTask
+            (
+                aMainTaskName,
+                taskBarrier,
+                iCmdLineArgsDesc.VC(),
+                iServiceCfgDesc
+            );
+
+            iTaskScheduler->AddTaskToReady(mainTask);
+
+            //std::cout << "AAAA: !!!!!!!!!!!!11" << std::endl;
+            taskBarrier->Wait();
+            //std::cout << "BBBB: !!!!!!!!!!!!11" << std::endl;
+        },
+        std::nullopt,
+        std::nullopt
+    );
+
+    iTaskScheduler->AddTaskToReady(startTask);
+    startTask->JoinForState(GpTaskState::FINISHED);
 }
 
-void    GpService::StartTasks (const GpTaskFactory::C::Vec::SP& aTaskFactories)
+void    GpService::StartTasks (const GpTaskFactory::C::MapStr::SP& aTaskFactories)
 {
-    for (const GpTaskFactory::SP& tf: aTaskFactories)
+    for (auto& iter: aTaskFactories)
     {
-        iTaskScheduler->AddTaskToReady(tf->NewInstance());
+        std::string_view            name        = iter.first;
+        const GpTaskFactory::SP&    taskFactory = iter.second;
+
+        iTaskScheduler->AddTaskToReady(taskFactory->NewInstance(name));
     }
 }
 

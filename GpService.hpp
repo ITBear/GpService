@@ -23,10 +23,11 @@ protected:
 public:
     virtual                             ~GpService              (void) noexcept;
 
-    [[nodiscard]] static int            SRun                    (const size_t                       aArgc,
-                                                                 char**                             aArgv,
-                                                                 const GpServiceFactory::SP         aServiceFactory,
-                                                                 const GpTaskFactory::C::Vec::SP&   aTaskFactories) noexcept;
+    [[nodiscard]] static int            SRun                    (const size_t                           aArgc,
+                                                                 char**                                 aArgv,
+                                                                 const GpServiceFactory::SP             aServiceFactory,
+                                                                 const GpTaskFactory::C::MapStr::SP&    aTaskFactories,
+                                                                 std::string_view                       aMainTaskName);
 
 protected:
     static void                         SWaitForInterrupt       (void) noexcept;
@@ -37,13 +38,16 @@ protected:
 protected:
     virtual GpArgBaseDesc::SP           CreateCmdLineArgsDesc   (void) = 0;
     virtual GpServiceCfgBaseDesc::SP    CreateServiceCfgDesc    (void) = 0;
-    virtual GpServiceMainTask::SP       CreateMainTask          (const GpArgBaseDesc&       aCmdLineArgsDesc,
+    virtual GpServiceMainTask::SP       CreateMainTask          (std::string_view           aName,
+                                                                 GpTaskFiberBarrier::SP     aTaskBarrierOnStart,
+                                                                 const GpArgBaseDesc&       aCmdLineArgsDesc,
                                                                  GpServiceCfgBaseDesc::CSP  aServiceCfgDesc) = 0;
 
 private:
-    void                                Start                   (const size_t                       aArgc,
-                                                                 char**                             aArgv,
-                                                                 const GpTaskFactory::C::Vec::SP&   aTaskFactories);
+    void                                Start                   (const size_t                           aArgc,
+                                                                 char**                                 aArgv,
+                                                                 const GpTaskFactory::C::MapStr::SP&    aTaskFactories,
+                                                                 std::string_view                       aMainTaskName);
     void                                Stop                    (void);
     //ForkResT                          Fork                    (void);
     void                                ParseCmdLineArgs        (const size_t aArgc, char** aArgv);
@@ -52,8 +56,8 @@ private:
     void                                StartTaskScheduler      (void);
     void                                StopTaskScheduler       (void) noexcept;
 
-    void                                StartMainTask           (void);
-    void                                StartTasks              (const GpTaskFactory::C::Vec::SP& aTaskFactories);
+    void                                StartMainTask           (std::string_view aMainTaskName);
+    void                                StartTasks              (const GpTaskFactory::C::MapStr::SP& aTaskFactories);
 
 private:
     const std::string                   iName;
