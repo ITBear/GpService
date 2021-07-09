@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPSERVICE_API GpServiceMainTask: public GpTaskFiberBase
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpServiceMainTask)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpServiceMainTask)
     CLASS_DECLARE_DEFAULTS(GpServiceMainTask)
 
     using EventOptRefT  = std::optional<std::reference_wrapper<GpEvent>>;

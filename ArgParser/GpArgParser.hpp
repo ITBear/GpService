@@ -12,7 +12,7 @@ namespace GPlatform {
 class GPSERVICE_API GpArgParser
 {
 public:
-    CLASS_REMOVE_CTRS(GpArgParser)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpArgParser)
 
     using OptDescT  = boost::program_options::options_description;
 

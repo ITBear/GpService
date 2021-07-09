@@ -9,7 +9,7 @@ class GpService;
 class GPSERVICE_API GpServiceFactory
 {
 public:
-    CLASS_REMOVE_CTRS_EXCEPT_DEFAULT(GpServiceFactory)
+    CLASS_REMOVE_CTRS_MOVE_COPY(GpServiceFactory)
     CLASS_DECLARE_DEFAULTS(GpServiceFactory)
 
 protected:

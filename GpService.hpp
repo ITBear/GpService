@@ -8,7 +8,7 @@ namespace GPlatform {
 class GPSERVICE_API GpService
 {
 public:
-    CLASS_REMOVE_CTRS(GpService)
+    CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpService)
     CLASS_DECLARE_DEFAULTS(GpService)
 
     enum class ForkResT
