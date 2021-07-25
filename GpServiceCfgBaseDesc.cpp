@@ -14,6 +14,7 @@ GpServiceCfgBaseDesc::~GpServiceCfgBaseDesc (void) noexcept
 
 void    GpServiceCfgBaseDesc::_SCollectStructProps (GpTypePropInfo::C::Vec::Val& aPropsOut)
 {
+    PROP(log);
     PROP(task_manager);
 }
 

@@ -14,9 +14,11 @@ public:
                                         GpServiceCfgBaseDesc    (void) noexcept;
     virtual                             ~GpServiceCfgBaseDesc   (void) noexcept override;
 
+    const GpLogConfigDesc&              Log                     (void) const noexcept {return log;}
     const GpServiceCfgTaskManagerDesc&  TaskManager             (void) const noexcept {return task_manager;}
 
 private:
+    GpLogConfigDesc                     log;
     GpServiceCfgTaskManagerDesc         task_manager;
 };
 

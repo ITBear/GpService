@@ -15,6 +15,7 @@ include(../../QtGlobalPro.pri)
 os_windows{
 	GP_CORE_LIB_V		= 2
 	GP_JSON_LIB_V		= 0
+	GP_LOG_LIB_V		= 0
 	BOOST_LIB_POSTFIX	= -mgw82-mt-x64-1_75
 }
 
@@ -23,6 +24,7 @@ os_linux{
 
 LIBS += -lGpCore2$$TARGET_POSTFIX$$GP_CORE_LIB_V
 LIBS += -lGpJson$$TARGET_POSTFIX$$GP_JSON_LIB_V
+LIBS += -lGpLog$$TARGET_POSTFIX$$GP_LOG_LIB_V
 LIBS += -lboost_program_options
 #------------------------------ LIBS END ---------------------------------
 

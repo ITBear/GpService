@@ -170,6 +170,8 @@ void    GpService::Start
     ParseCmdLineArgs(aArgc, aArgv);
     ReadConfig();
     SetSystemSignalsHandler();
+
+    StartLog();
     StartTaskScheduler();
     StartMainTask(aMainTaskName);
     StartTasks(aTaskFactories);
@@ -178,6 +180,7 @@ void    GpService::Start
 void    GpService::Stop (void)
 {
     StopTaskScheduler();
+    StopLog();
 }
 
 /*GpService::ForkResT   GpService::Fork (void)
@@ -264,6 +267,21 @@ void    GpService::SetSystemSignalsHandler (void)
 #endif
 }
 
+void    GpService::StartLog (void)
+{
+    const auto& serviceCfg  = iServiceCfgDesc.VCn();
+    const auto& logCfg      = serviceCfg.Log();
+
+    GpLogger::S().StartFromConfig(logCfg);
+    GL_LOG_INFO("Start application: "_sv + iName);
+}
+
+void    GpService::StopLog (void)
+{
+    GL_LOG_INFO("Stop application"_sv);
+    GpLogger::S().Stop();
+}
+
 void    GpService::StartTaskScheduler (void)
 {
     const auto& serviceCfg      = iServiceCfgDesc.VCn();
@@ -294,6 +312,8 @@ void    GpService::StopTaskScheduler (void) noexcept
     iTaskScheduler.Vn().Join();
     iTaskScheduler.Vn().AfterJoin();
     iTaskScheduler.Clear();
+
+    GpTaskFiber::SClearCurrentCtx();
 }
 
 void    GpService::StartMainTask (std::string_view aMainTaskName)
@@ -313,10 +333,7 @@ void    GpService::StartMainTask (std::string_view aMainTaskName)
             );
 
             iTaskScheduler->AddTaskToReady(mainTask);
-
-            //std::cout << "AAAA: !!!!!!!!!!!!11" << std::endl;
             taskBarrier->Wait();
-            //std::cout << "BBBB: !!!!!!!!!!!!11" << std::endl;
         },
         std::nullopt,
         std::nullopt

@@ -53,6 +53,8 @@ private:
     void                                ParseCmdLineArgs        (const size_t aArgc, char** aArgv);
     void                                ReadConfig              (void);
     void                                SetSystemSignalsHandler (void); 
+    void                                StartLog                (void);
+    void                                StopLog                 (void);
     void                                StartTaskScheduler      (void);
     void                                StopTaskScheduler       (void) noexcept;
 
