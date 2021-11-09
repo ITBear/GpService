@@ -273,12 +273,12 @@ void    GpService::StartLog (void)
     const auto& logCfg      = serviceCfg.Log();
 
     GpLogger::S().StartFromConfig(logCfg);
-    GL_LOG_INFO("Start application: "_sv + iName);
+    GpLogBuilder::SMsg("Start application: "_sv + iName).Level(GpLogLevel::INFO).Out();
 }
 
 void    GpService::StopLog (void)
 {
-    GL_LOG_INFO("Stop application"_sv);
+    GpLogBuilder::SMsg("Stop application: "_sv + iName).Level(GpLogLevel::INFO).Out();
     GpLogger::S().Stop();
 }
 
