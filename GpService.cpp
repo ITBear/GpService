@@ -60,7 +60,7 @@ int GpService::SRun
         SStop();
     }
 
-    std::cout << "[GpService::SRun]: Done (exit code "_sv << exitCode << ")\n"_sv;
+    GP_LOG_INFO("[GpService::SRun]: Done (exit code "_sv + exitCode + ")"_sv);
     std::cout.flush();
 
     return exitCode;
