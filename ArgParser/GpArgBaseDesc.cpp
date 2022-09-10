@@ -2,9 +2,23 @@
 
 namespace GPlatform {
 
-TYPE_STRUCT_IMPLEMENT(GpArgBaseDesc, GP_MODULE_UUID)
+REFLECT_IMPLEMENT(GpArgBaseDesc, GP_MODULE_UUID)
 
 GpArgBaseDesc::GpArgBaseDesc (void) noexcept
+{
+}
+
+GpArgBaseDesc::GpArgBaseDesc (const GpArgBaseDesc& aDesc):
+GpReflectObject(aDesc),
+background(aDesc.background),
+cfg(aDesc.cfg)
+{
+}
+
+GpArgBaseDesc::GpArgBaseDesc (GpArgBaseDesc&& aDesc) noexcept:
+GpReflectObject(std::move(aDesc)),
+background(std::move(aDesc.background)),
+cfg(std::move(aDesc.cfg))
 {
 }
 
@@ -12,10 +26,10 @@ GpArgBaseDesc::~GpArgBaseDesc (void) noexcept
 {
 }
 
-void    GpArgBaseDesc::_SCollectStructProps (GpTypePropInfo::C::Vec::Val& aPropsOut)
+void    GpArgBaseDesc::_SReflectCollectProps (GpReflectProp::C::Vec::Val& aPropsOut)
 {
-    PROP(run_background);
-    PROP(cfg_file);
+    PROP(background);
+    PROP(cfg);
 }
 
 }//namespace GPlatform

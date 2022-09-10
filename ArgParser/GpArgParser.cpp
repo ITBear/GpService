@@ -34,41 +34,39 @@ void    GpArgParser::SFillOptions
 {
     aOptDesc.add_options()("help", "Show help message");
 
-    const GpTypeStructInfo& typeInfo = aOut.TypeInfo();
+    const GpReflectModel& model = aOut.ReflectModel();
 
-    for (const GpTypePropInfo& propInfo: typeInfo.Props())
+    for (const GpReflectProp& propInfo: model.Props())
     {
-        const std::string               propName        = std::string(propInfo.Name());
-        const GpType::EnumT             propType        = propInfo.Type();
-        const GpTypeContainer::EnumT    propContainer   = propInfo.Container();
+        const std::string                   propName        = std::string(propInfo.Name());
+        const GpReflectType::EnumT          propType        = propInfo.Type();
+        const GpReflectContainerType::EnumT propContainer   = propInfo.Container();
 
-        THROW_GPE_COND
+        THROW_COND_GP
         (
-               (propContainer == GpTypeContainer::NO)
-            || (propContainer == GpTypeContainer::VECTOR),
+               (propContainer == GpReflectContainerType::NO)
+            || (propContainer == GpReflectContainerType::VECTOR),
             [&](){return "Property '"_sv + propName + "' container must be NO or VECTOR"_sv;}
         );
 
         switch (propType)
         {
-            case GpType::S_INT_8:    [[fallthrough]];
-            case GpType::U_INT_8:    [[fallthrough]];
-            case GpType::S_INT_16:   [[fallthrough]];
-            case GpType::U_INT_16:   [[fallthrough]];
-            case GpType::S_INT_32:   [[fallthrough]];
-            case GpType::U_INT_32:   [[fallthrough]];
-            case GpType::S_INT_64:   [[fallthrough]];
-            case GpType::U_INT_64:   [[fallthrough]];
-            case GpType::UNIX_TS_S:  [[fallthrough]];
-            case GpType::UNIX_TS_MS: [[fallthrough]];
-            case GpType::DOUBLE:     [[fallthrough]];
-            case GpType::FLOAT:      [[fallthrough]];
-            case GpType::UUID:       [[fallthrough]];
-            case GpType::STRING:     [[fallthrough]];
-            case GpType::BLOB:       [[fallthrough]];
-            case GpType::ENUM:
+            case GpReflectType::S_INT_8:    [[fallthrough]];
+            case GpReflectType::U_INT_8:    [[fallthrough]];
+            case GpReflectType::S_INT_16:   [[fallthrough]];
+            case GpReflectType::U_INT_16:   [[fallthrough]];
+            case GpReflectType::S_INT_32:   [[fallthrough]];
+            case GpReflectType::U_INT_32:   [[fallthrough]];
+            case GpReflectType::S_INT_64:   [[fallthrough]];
+            case GpReflectType::U_INT_64:   [[fallthrough]];
+            case GpReflectType::DOUBLE:     [[fallthrough]];
+            case GpReflectType::FLOAT:      [[fallthrough]];
+            case GpReflectType::UUID:       [[fallthrough]];
+            case GpReflectType::STRING:     [[fallthrough]];
+            case GpReflectType::BLOB:       [[fallthrough]];
+            case GpReflectType::ENUM:
             {
-                if (propContainer == GpTypeContainer::NO)
+                if (propContainer == GpReflectContainerType::NO)
                 {
                     aOptDesc.add_options()(propName.data(), boost::program_options::value<boost::container::string>(), "");
                 } else
@@ -76,32 +74,32 @@ void    GpArgParser::SFillOptions
                     aOptDesc.add_options()(propName.data(), boost::program_options::value<std::vector<boost::container::string>>()->multitoken(), "");
                 }
             } break;
-            case GpType::ENUM_FLAGS:
+            case GpReflectType::ENUM_FLAGS:
             {
-                if (propContainer == GpTypeContainer::NO)
+                if (propContainer == GpReflectContainerType::NO)
                 {
                     aOptDesc.add_options()(propName.data(), boost::program_options::value<std::vector<boost::container::string>>()->multitoken(), "");
                 } else
                 {
-                    THROW_GPE("Unsupported container type '"_sv + GpTypeContainer::SToString(propContainer) + "', property name '"_sv + propName + "'"_sv);
+                    THROW_GP("Unsupported container type '"_sv + GpReflectContainerType::SToString(propContainer) + "', property name '"_sv + propName + "'"_sv);
                 }
             } break;
-            case GpType::BOOLEAN:
+            case GpReflectType::BOOLEAN:
             {
-                if (propContainer == GpTypeContainer::NO)
+                if (propContainer == GpReflectContainerType::NO)
                 {
                     aOptDesc.add_options()(propName.data(), "");
                 } else
                 {
-                    THROW_GPE("Unsupported container type '"_sv + GpTypeContainer::SToString(propContainer) + "', property name '"_sv + propName + "'"_sv);
+                    THROW_GP("Unsupported container type '"_sv + GpReflectContainerType::SToString(propContainer) + "', property name '"_sv + propName + "'"_sv);
                 }
             } break;
-            case GpType::STRUCT:    [[fallthrough]];
-            case GpType::STRUCT_SP: [[fallthrough]];
-            case GpType::NOT_SET:   [[fallthrough]];
+            case GpReflectType::OBJECT:    [[fallthrough]];
+            case GpReflectType::OBJECT_SP: [[fallthrough]];
+            case GpReflectType::NOT_SET:   [[fallthrough]];
             default:
             {
-                THROW_GPE("Unsupported type '"_sv + GpType::SToString(propType) + "', property name '"_sv + propName + "'"_sv);
+                THROW_GP("Unsupported type '"_sv + GpReflectType::SToString(propType) + "', property name '"_sv + propName + "'"_sv);
             }
         }
     }
@@ -119,13 +117,14 @@ void    GpArgParser::SParseOptions
     boost::program_options::store(boost::program_options::parse_command_line(NumOps::SConvert<int>(aArgc), aArgv, aOptDesc), vm);
     boost::program_options::notify(vm);
 
-    const GpTypeStructInfo& typeInfo = aOut.TypeInfo();
+    const GpReflectModel&   model   = aOut.ReflectModel();
+    void*                   dataPtr = aOut.ReflectDataPtr();
 
-    for (const GpTypePropInfo& propInfo: typeInfo.Props())
+    for (const GpReflectProp& propInfo: model.Props())
     {
-        const std::string               propName        = std::string(propInfo.Name());
-        const GpType::EnumT             propType        = propInfo.Type();
-        const GpTypeContainer::EnumT    propContainer   = propInfo.Container();
+        const std::string                   propName        = std::string(propInfo.Name());
+        const GpReflectType::EnumT          propType        = propInfo.Type();
+        const GpReflectContainerType::EnumT propContainer   = propInfo.Container();
 
         if (!vm.count(propName.data()))
         {
@@ -134,108 +133,106 @@ void    GpArgParser::SParseOptions
 
         const auto& optVal = vm[propName.data()];
 
-        if (propType == GpType::BOOLEAN)
+        if (propType == GpReflectType::BOOLEAN)
         {
-            propInfo.Value_Bool(aOut) = true;
+            propInfo.Value_Bool(dataPtr) = true;
         } else
         {
-            THROW_GPE_COND
+            THROW_COND_GP
             (
                 !optVal.empty(),
                 [&](){return "Empty value for property '"_sv + propName + "'"_sv;}
             );
 
-            if (propContainer == GpTypeContainer::NO)
+            if (propContainer == GpReflectContainerType::NO)
             {
                 switch (propType)
                 {
-                    case GpType::S_INT_8:
+                    case GpReflectType::S_INT_8:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_SInt8(aOut)  = NumOps::SConvert<s_int_8>(StrOps::SToSI64(sv));
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_SInt8(dataPtr) = NumOps::SConvert<s_int_8>(StrOps::SToSI64(sv));
                     } break;
-                    case GpType::U_INT_8:
+                    case GpReflectType::U_INT_8:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_UInt8(aOut)  = NumOps::SConvert<u_int_8>(StrOps::SToUI64(sv));
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_UInt8(dataPtr) = NumOps::SConvert<u_int_8>(StrOps::SToUI64(sv));
                     } break;
-                    case GpType::S_INT_16:
+                    case GpReflectType::S_INT_16:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_SInt16(aOut) = NumOps::SConvert<s_int_16>(StrOps::SToSI64(sv));
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_SInt16(dataPtr) = NumOps::SConvert<s_int_16>(StrOps::SToSI64(sv));
                     } break;
-                    case GpType::U_INT_16:
+                    case GpReflectType::U_INT_16:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_UInt16(aOut) = NumOps::SConvert<u_int_16>(StrOps::SToUI64(sv));
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_UInt16(dataPtr) = NumOps::SConvert<u_int_16>(StrOps::SToUI64(sv));
                     } break;
-                    case GpType::S_INT_32:
+                    case GpReflectType::S_INT_32:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_SInt32(aOut) = NumOps::SConvert<s_int_32>(StrOps::SToSI64(sv));
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_SInt32(dataPtr) = NumOps::SConvert<s_int_32>(StrOps::SToSI64(sv));
                     } break;
-                    case GpType::U_INT_32:
+                    case GpReflectType::U_INT_32:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_UInt32(aOut) = NumOps::SConvert<u_int_32>(StrOps::SToUI64(sv));
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_UInt32(dataPtr) = NumOps::SConvert<u_int_32>(StrOps::SToUI64(sv));
                     } break;
-                    case GpType::S_INT_64:  [[fallthrough]];
-                    case GpType::UNIX_TS_S: [[fallthrough]];
-                    case GpType::UNIX_TS_MS:
+                    case GpReflectType::S_INT_64:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_SInt64(aOut) = NumOps::SConvert<s_int_64>(StrOps::SToSI64(sv));
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_SInt64(dataPtr) = NumOps::SConvert<s_int_64>(StrOps::SToSI64(sv));
                     } break;
-                    case GpType::U_INT_64:
+                    case GpReflectType::U_INT_64:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_UInt64(aOut) = NumOps::SConvert<u_int_64>(StrOps::SToUI64(sv));
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_UInt64(dataPtr) = NumOps::SConvert<u_int_64>(StrOps::SToUI64(sv));
                     } break;
-                    case GpType::DOUBLE:
+                    case GpReflectType::DOUBLE:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_Double(aOut) = NumOps::SConvert<double>(StrOps::SToDouble_fast(sv));
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_Double(dataPtr) = NumOps::SConvert<double>(StrOps::SToDouble(sv));
                     } break;
-                    case GpType::FLOAT:
+                    case GpReflectType::FLOAT:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_Float(aOut)  = NumOps::SConvert<float>(StrOps::SToDouble_fast(sv));
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_Float(dataPtr) = NumOps::SConvert<float>(StrOps::SToDouble(sv));
                     } break;
-                    case GpType::UUID:
+                    case GpReflectType::UUID:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_UUID(aOut)   = GpUUID::SFromString(sv);
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_UUID(dataPtr) = GpUUID::SFromString(sv);
                     } break;
-                    case GpType::STRING:
+                    case GpReflectType::STRING:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_String(aOut) = sv.AsStringView();
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_String(dataPtr) = sv;
                     } break;
-                    case GpType::BLOB:
+                    case GpReflectType::BLOB:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_BLOB(aOut)   = StrOps::SToBytesHex(sv);
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_BLOB(dataPtr) = StrOps::SToBytesHex(sv);
                     } break;
-                    case GpType::ENUM:
+                    case GpReflectType::ENUM:
                     {
-                        const auto&     v   = optVal.as<boost::container::string>();
-                        GpRawPtrCharR   sv  = {v.data(), v.size()};
-                        propInfo.Value_Enum(aOut).FromString(sv);
+                        const auto&         v   = optVal.as<boost::container::string>();
+                        std::string_view    sv  = {v.data(), v.size()};
+                        propInfo.Value_Enum(dataPtr).FromString(sv);
                     } break;
-                    case GpType::ENUM_FLAGS:
+                    case GpReflectType::ENUM_FLAGS:
                     {
                         const auto& v = optVal.as<std::vector<boost::container::string>>();
                         GpVector<std::string> vs;
@@ -244,15 +241,15 @@ void    GpArgParser::SParseOptions
                             vs.emplace_back(s);
                         }
 
-                        propInfo.Value_EnumFlags(aOut).FromStringArray(vs);
+                        propInfo.Value_EnumFlags(dataPtr).FromStringArray(vs);
                     } break;
-                    case GpType::BOOLEAN:[[fallthrough]];
-                    case GpType::STRUCT:[[fallthrough]];
-                    case GpType::STRUCT_SP:[[fallthrough]];
-                    case GpType::NOT_SET:[[fallthrough]];
+                    case GpReflectType::BOOLEAN:    [[fallthrough]];
+                    case GpReflectType::OBJECT:     [[fallthrough]];
+                    case GpReflectType::OBJECT_SP:  [[fallthrough]];
+                    case GpReflectType::NOT_SET:    [[fallthrough]];
                     default:
                     {
-                        THROW_GPE("Unsupported type '"_sv + GpType::SToString(propType) + "' of prop '"_sv + propName + "'"_sv);
+                        THROW_GP("Unsupported type '"_sv + GpReflectType::SToString(propType) + "' of prop '"_sv + propName + "'"_sv);
                     }
                 }//switch (propType)
             } else
@@ -261,86 +258,84 @@ void    GpArgParser::SParseOptions
 
                 switch (propType)
                 {
-                    case GpType::S_INT_8:
+                    case GpReflectType::S_INT_8:
                     {
-                        auto& vec = propInfo.Value_Vec_SInt8(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_SInt8(dataPtr); vec.clear();
                         for (const auto& e: v) vec.emplace_back(NumOps::SConvert<s_int_8>(StrOps::SToSI64({e.data(), e.size()})));
                     } break;
-                    case GpType::U_INT_8:
+                    case GpReflectType::U_INT_8:
                     {
-                        auto& vec = propInfo.Value_Vec_UInt8(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_UInt8(dataPtr); vec.clear();
                         for (const auto& e: v) vec.emplace_back(NumOps::SConvert<u_int_8>(StrOps::SToUI64({e.data(), e.size()})));
                     } break;
-                    case GpType::S_INT_16:
+                    case GpReflectType::S_INT_16:
                     {
-                        auto& vec = propInfo.Value_Vec_SInt16(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_SInt16(dataPtr); vec.clear();
                         for (const auto& e: v) vec.emplace_back(NumOps::SConvert<s_int_16>(StrOps::SToSI64({e.data(), e.size()})));
                     } break;
-                    case GpType::U_INT_16:
+                    case GpReflectType::U_INT_16:
                     {
-                        auto& vec = propInfo.Value_Vec_UInt16(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_UInt16(dataPtr); vec.clear();
                         for (const auto& e: v) vec.emplace_back(NumOps::SConvert<u_int_16>(StrOps::SToUI64({e.data(), e.size()})));
                     } break;
-                    case GpType::S_INT_32:
+                    case GpReflectType::S_INT_32:
                     {
-                        auto& vec = propInfo.Value_Vec_SInt32(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_SInt32(dataPtr); vec.clear();
                         for (const auto& e: v) vec.emplace_back(NumOps::SConvert<s_int_32>(StrOps::SToSI64({e.data(), e.size()})));
                     } break;
-                    case GpType::U_INT_32:
+                    case GpReflectType::U_INT_32:
                     {
-                        auto& vec = propInfo.Value_Vec_UInt32(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_UInt32(dataPtr); vec.clear();
                         for (const auto& e: v) vec.emplace_back(NumOps::SConvert<u_int_32>(StrOps::SToUI64({e.data(), e.size()})));
                     } break;
-                    case GpType::S_INT_64:  [[fallthrough]];
-                    case GpType::UNIX_TS_S: [[fallthrough]];
-                    case GpType::UNIX_TS_MS:
+                    case GpReflectType::S_INT_64:
                     {
-                        auto& vec = propInfo.Value_Vec_SInt64(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_SInt64(dataPtr); vec.clear();
                         for (const auto& e: v) vec.emplace_back(NumOps::SConvert<s_int_64>(StrOps::SToSI64({e.data(), e.size()})));
                     } break;
-                    case GpType::U_INT_64:
+                    case GpReflectType::U_INT_64:
                     {
-                        auto& vec = propInfo.Value_Vec_UInt64(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_UInt64(dataPtr); vec.clear();
                         for (const auto& e: v) vec.emplace_back(NumOps::SConvert<u_int_64>(StrOps::SToUI64({e.data(), e.size()})));
                     } break;
-                    case GpType::DOUBLE:
+                    case GpReflectType::DOUBLE:
                     {
-                        auto& vec = propInfo.Value_Vec_Double(aOut); vec.clear();
-                        for (const auto& e: v) vec.emplace_back(NumOps::SConvert<double>(StrOps::SToDouble_fast({e.data(), e.size()})));
+                        auto& vec = propInfo.Vec_Double(dataPtr); vec.clear();
+                        for (const auto& e: v) vec.emplace_back(NumOps::SConvert<double>(StrOps::SToDouble({e.data(), e.size()})));
                     } break;
-                    case GpType::FLOAT:
+                    case GpReflectType::FLOAT:
                     {
-                        auto& vec = propInfo.Value_Vec_Float(aOut); vec.clear();
-                        for (const auto& e: v) vec.emplace_back(NumOps::SConvert<float>(StrOps::SToDouble_fast({e.data(), e.size()})));
+                        auto& vec = propInfo.Vec_Float(dataPtr); vec.clear();
+                        for (const auto& e: v) vec.emplace_back(NumOps::SConvert<float>(StrOps::SToDouble({e.data(), e.size()})));
                     } break;
-                    case GpType::UUID:
+                    case GpReflectType::UUID:
                     {
-                        auto& vec = propInfo.Value_Vec_UUID(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_UUID(dataPtr); vec.clear();
                         for (const auto& e: v) vec.emplace_back(GpUUID::SFromString({e.data(), e.size()}));
                     } break;
-                    case GpType::STRING:
+                    case GpReflectType::STRING:
                     {
-                        auto& vec = propInfo.Value_Vec_String(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_String(dataPtr); vec.clear();
                         for (const auto& e: v)
                         {
-                            GpRawPtrCharR   sv  = {e.data(), e.size()};
-                            vec.emplace_back(sv.AsStringView());
+                            std::string_view sv = {e.data(), e.size()};
+                            vec.emplace_back(sv);
                         }
                     } break;
-                    case GpType::BLOB:
+                    case GpReflectType::BLOB:
                     {
-                        auto& vec = propInfo.Value_Vec_BLOB(aOut); vec.clear();
+                        auto& vec = propInfo.Vec_BLOB(dataPtr); vec.clear();
                         for (const auto& e: v) vec.emplace_back(StrOps::SToBytesHex({e.data(), e.size()}));
                     } break;
-                    case GpType::ENUM:[[fallthrough]];
-                    case GpType::ENUM_FLAGS:[[fallthrough]];
-                    case GpType::BOOLEAN:[[fallthrough]];
-                    case GpType::STRUCT:[[fallthrough]];
-                    case GpType::STRUCT_SP:[[fallthrough]];
-                    case GpType::NOT_SET:[[fallthrough]];
+                    case GpReflectType::ENUM:       [[fallthrough]];
+                    case GpReflectType::ENUM_FLAGS: [[fallthrough]];
+                    case GpReflectType::BOOLEAN:    [[fallthrough]];
+                    case GpReflectType::OBJECT:     [[fallthrough]];
+                    case GpReflectType::OBJECT_SP:  [[fallthrough]];
+                    case GpReflectType::NOT_SET:    [[fallthrough]];
                     default:
                     {
-                        THROW_GPE("Unsupported array of type '"_sv + GpType::SToString(propType) + "' of prop '"_sv + propName + "'"_sv);
+                        THROW_GP("Unsupported array of type '"_sv + GpReflectType::SToString(propType) + "' of prop '"_sv + propName + "'"_sv);
                     }
                 }
             }

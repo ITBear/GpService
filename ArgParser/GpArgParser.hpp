@@ -9,7 +9,7 @@ namespace boost::program_options
 
 namespace GPlatform {
 
-class GPSERVICE_API GpArgParser
+class GP_SERVICE_API GpArgParser
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpArgParser)

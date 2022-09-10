@@ -6,7 +6,7 @@ namespace GPlatform {
 
 class GpService;
 
-class GPSERVICE_API GpServiceFactory
+class GP_SERVICE_API GpServiceFactory
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpServiceFactory)

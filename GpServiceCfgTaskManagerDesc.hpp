@@ -4,24 +4,26 @@
 
 namespace GPlatform {
 
-class GPSERVICE_API GpServiceCfgTaskManagerDesc: public GpTypeStructBase
+class GP_SERVICE_API GpServiceCfgTaskManagerDesc: public GpReflectObject
 {
 public:
     CLASS_DECLARE_DEFAULTS(GpServiceCfgTaskManagerDesc)
-    TYPE_STRUCT_DECLARE("53538c79-f429-4ac3-8c13-b1a2dab02f99"_sv)
+    REFLECT_DECLARE("53538c79-f429-4ac3-8c13-b1a2dab02f99"_uuid)
 
 public:
                             GpServiceCfgTaskManagerDesc     (void) noexcept;
+    explicit                GpServiceCfgTaskManagerDesc     (const GpServiceCfgTaskManagerDesc& aDesc);
+    explicit                GpServiceCfgTaskManagerDesc     (GpServiceCfgTaskManagerDesc&& aDesc) noexcept;
     virtual                 ~GpServiceCfgTaskManagerDesc    (void) noexcept override;
 
-    count_t                 MaxFibersCnt                    (void) const noexcept {return max_fibers_cnt;}
+    size_t                  MaxFibersCnt                    (void) const noexcept {return max_fibers_cnt;}
     size_byte_t             FiberStackSize                  (void) const noexcept {return fiber_stack_size;}
-    count_t                 ExecutorsCnt                    (void) const noexcept {return executors_cnt;}
+    size_t                  ExecutorsCnt                    (void) const noexcept {return executors_cnt;}
 
 private:
-    count_t                 max_fibers_cnt      = 1024_cnt;
+    size_t                  max_fibers_cnt      = 1024;
     size_byte_t             fiber_stack_size    = 128_kB;
-    count_t                 executors_cnt       = 1_cnt;
+    size_t                  executors_cnt       = 1;
 };
 
 }//namespace GPlatform

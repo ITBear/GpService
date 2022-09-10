@@ -5,7 +5,7 @@
 
 namespace GPlatform {
 
-class GPSERVICE_API GpServiceMainTask: public GpTaskFiberBase
+class GP_SERVICE_API GpServiceMainTask: public GpLogTaskFiberBase
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpServiceMainTask)
@@ -14,23 +14,61 @@ public:
     using EventOptRefT  = std::optional<std::reference_wrapper<GpEvent>>;
 
 protected:
-                                GpServiceMainTask       (std::string_view           aName,
-                                                         GpTaskFiberBarrier::SP     aTaskBarrierOnStart,
-                                                         const GpArgBaseDesc&       aCmdLineArgsDesc,
-                                                         GpServiceCfgBaseDesc::CSP  aServiceCfgDesc);
+    inline                      GpServiceMainTask       (std::string                    aName,
+                                                         GpItcPromise&&                 aStartPromise,
+                                                         const GpArgBaseDesc&           aCmdLineArgsDesc,
+                                                         const GpServiceCfgBaseDesc&    aServiceCfgDesc) noexcept;
     virtual                     ~GpServiceMainTask      (void) noexcept override;
 
     const GpArgBaseDesc&        CmdLineArgs             (void) const noexcept {return iCmdLineArgsDesc;}
-    const GpServiceCfgBaseDesc& ServiceCfg              (void) const noexcept {return iServiceCfgDesc.VC();}
-    GpServiceCfgBaseDesc::CSP   ServiceCfgCSP           (void) const noexcept {return iServiceCfgDesc;}
+
+    template<typename T>
+    const T&                    CmdLineArgsAs           (void) const;
+
+    const GpServiceCfgBaseDesc& ServiceCfg              (void) const noexcept {return iServiceCfgDesc;}
+
+    template<typename T>
+    const T&                    ServiceCfgAs            (void) const;
 
 protected:
-    void                        ReleaseBarrierOnStart   (void);
+    inline void                 CompleteStartPromise    (GpItcResult::SP aResult) noexcept {iStartPromise.Complete(std::move(aResult));}
+
+    virtual void                OnStart                 (void) override = 0;
+    virtual GpTaskDoRes         OnStep                  (EventOptRefT aEvent) override = 0;
+    virtual void                OnStop                  (void) noexcept override = 0;
 
 private:
-    GpTaskFiberBarrier::SP      iTaskBarrierOnStart;
+    GpItcPromise                iStartPromise;
     const GpArgBaseDesc&        iCmdLineArgsDesc;
-    GpServiceCfgBaseDesc::CSP   iServiceCfgDesc;    
+    const GpServiceCfgBaseDesc& iServiceCfgDesc;
 };
+
+GpServiceMainTask::GpServiceMainTask
+(
+    std::string                 aName,
+    GpItcPromise&&              aStartPromise,
+    const GpArgBaseDesc&        aCmdLineArgsDesc,
+    const GpServiceCfgBaseDesc& aServiceCfgDesc
+) noexcept:
+GpLogTaskFiberBase(std::move(aName)),
+iStartPromise(std::move(aStartPromise)),
+iCmdLineArgsDesc(aCmdLineArgsDesc),
+iServiceCfgDesc(std::move(aServiceCfgDesc))
+{
+}
+
+template<typename T>
+const T&    GpServiceMainTask::CmdLineArgsAs (void) const
+{
+    const T& cmdLineArgsDesc = GpReflectManager::SCastRef<const T>(CmdLineArgs());
+    return cmdLineArgsDesc;
+}
+
+template<typename T>
+const T&    GpServiceMainTask::ServiceCfgAs (void) const
+{
+    const T& serviceCfgDesc = GpReflectManager::SCastRef<const T>(ServiceCfg());
+    return serviceCfgDesc;
+}
 
 }//namespace GPlatform

@@ -1,11 +1,12 @@
 #pragma once
 
-#include "../GpCore2/GpCore.hpp"
-#include "../GpJson/GpJson.hpp"
-#include "../GpLog/GpLog.hpp"
+#include "../GpCore2/GpUtils/GpUtils.hpp"
+#include "../GpCore2/GpReflection/GpReflection.hpp"
+#include "../GpCore2/GpTasks/GpTasks.hpp"
+#include "../GpLog/GpLogCore/GpLogCore.hpp"
 
-#if defined(GPSERVICE_LIBRARY)
-    #define GPSERVICE_API GP_DECL_EXPORT
+#if defined(GP_SERVICE_LIBRARY)
+    #define GP_SERVICE_API GP_DECL_EXPORT
 #else
-    #define GPSERVICE_API GP_DECL_IMPORT
+    #define GP_SERVICE_API GP_DECL_IMPORT
 #endif

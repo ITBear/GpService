@@ -4,22 +4,21 @@
 
 namespace GPlatform {
 
-class GPSERVICE_API GpServiceCfgBaseDesc: public GpTypeStructBase
+class GP_SERVICE_API GpServiceCfgBaseDesc: public GpReflectObject
 {
 public:
     CLASS_DECLARE_DEFAULTS(GpServiceCfgBaseDesc)
-    TYPE_STRUCT_DECLARE("7005f76c-e11c-441d-9d4f-dd9b7f0005de"_sv)
+    REFLECT_DECLARE("7005f76c-e11c-441d-9d4f-dd9b7f0005de"_uuid)
 
 public:
-                                        GpServiceCfgBaseDesc    (void) noexcept;
-    virtual                             ~GpServiceCfgBaseDesc   (void) noexcept override;
+                                    GpServiceCfgBaseDesc    (void) noexcept;
+    explicit                        GpServiceCfgBaseDesc    (const GpServiceCfgBaseDesc& aDesc);
+    explicit                        GpServiceCfgBaseDesc    (GpServiceCfgBaseDesc&& aDesc) noexcept;
+    virtual                         ~GpServiceCfgBaseDesc   (void) noexcept override;
 
-    const GpLogConfigDesc&              Log                     (void) const noexcept {return log;}
-    const GpServiceCfgTaskManagerDesc&  TaskManager             (void) const noexcept {return task_manager;}
-
-private:
-    GpLogConfigDesc                     log;
-    GpServiceCfgTaskManagerDesc         task_manager;
+public:
+    GpLogConfigDesc::SP             log;
+    GpServiceCfgTaskManagerDesc     task_manager;
 };
 
 }//namespace GPlatform
