@@ -365,19 +365,12 @@ void    GpService::StartTaskScheduler (const GpServiceStartFlags /*aFlags*/)
 
 void    GpService::StopTaskScheduler (void) noexcept
 {
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>> [GpService::StopTaskScheduler]: 1 <<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-
     GpTaskScheduler& taskScheduler = GpTaskScheduler::S();
-
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>> [GpService::StopTaskScheduler]: 2 <<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 
     taskScheduler.RequestStop();
     taskScheduler.Join();
 
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>> [GpService::StopTaskScheduler]: 3 <<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
-
     GpTaskFiberManagerEx::SClear();
-    std::cout << ">>>>>>>>>>>>>>>>>>>>>>>>>>> [GpService::StopTaskScheduler]: 4 <<<<<<<<<<<<<<<<<<<<<<<<<<<<" << std::endl;
 }
 
 void    GpService::StartMainTask (std::string aName)

@@ -7,7 +7,7 @@ namespace GPlatform {
 class GP_SERVICE_API GpServiceCfgBaseDesc: public GpReflectObject
 {
 public:
-    CLASS_DECLARE_DEFAULTS(GpServiceCfgBaseDesc)
+    CLASS_DD(GpServiceCfgBaseDesc)
     REFLECT_DECLARE("7005f76c-e11c-441d-9d4f-dd9b7f0005de"_uuid)
 
 public:

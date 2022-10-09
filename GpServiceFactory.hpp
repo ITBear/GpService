@@ -10,7 +10,7 @@ class GP_SERVICE_API GpServiceFactory
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpServiceFactory)
-    CLASS_DECLARE_DEFAULTS(GpServiceFactory)
+    CLASS_DD(GpServiceFactory)
 
 protected:
                                 GpServiceFactory    (void) noexcept {}

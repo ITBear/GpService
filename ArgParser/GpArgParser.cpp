@@ -235,7 +235,7 @@ void    GpArgParser::SParseOptions
                     case GpReflectType::ENUM_FLAGS:
                     {
                         const auto& v = optVal.as<std::vector<boost::container::string>>();
-                        GpVector<std::string> vs;
+                        std::vector<std::string> vs;
                         for (const auto& s: v)
                         {
                             vs.emplace_back(s);

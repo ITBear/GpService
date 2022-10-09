@@ -9,7 +9,7 @@ class GP_SERVICE_API GpServiceMainTask: public GpLogTaskFiberBase
 {
 public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpServiceMainTask)
-    CLASS_DECLARE_DEFAULTS(GpServiceMainTask)
+    CLASS_DD(GpServiceMainTask)
 
     using EventOptRefT  = std::optional<std::reference_wrapper<GpEvent>>;
 

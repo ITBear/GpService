@@ -12,7 +12,7 @@ class GP_SERVICE_API GpService
 {
 public:
     CLASS_REMOVE_CTRS_DEFAULT_MOVE_COPY(GpService)
-    CLASS_DECLARE_DEFAULTS(GpService)
+    CLASS_DD(GpService)
 
     enum class ForkResT
     {
