@@ -1,9 +1,6 @@
 #pragma once
 
-#include "../GpCore2/GpUtils/GpUtils.hpp"
-#include "../GpCore2/GpReflection/GpReflection.hpp"
-#include "../GpCore2/GpTasks/GpTasks.hpp"
-#include "../GpLog/GpLogCore/GpLogCore.hpp"
+#include "../GpCore2/GpUtils/Macro/GpMacroImportExport.hpp"
 
 #if defined(GP_SERVICE_LIBRARY)
     #define GP_SERVICE_API GP_DECL_EXPORT

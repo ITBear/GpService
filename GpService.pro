@@ -30,6 +30,7 @@ SOURCES += \
 
 HEADERS += \
     ArgParser/GpArgBaseDesc.hpp \
+    ArgParser/GpArgBaseDescFactory.hpp \
     ArgParser/GpArgParser.hpp \
     GpService.hpp \
     GpServiceCfgBaseDesc.hpp \

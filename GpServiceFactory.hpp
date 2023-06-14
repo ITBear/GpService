@@ -1,6 +1,8 @@
 #pragma once
 
 #include "GpService_global.hpp"
+#include "../GpCore2/GpUtils/Macro/GpMacroClass.hpp"
+#include "../GpCore2/GpUtils/Types/Containers/GpContainersT.hpp"
 
 namespace GPlatform {
 
@@ -13,10 +15,10 @@ public:
     CLASS_DD(GpServiceFactory)
 
 protected:
-                                GpServiceFactory    (void) noexcept {}
+                                GpServiceFactory    (void) noexcept = default;
 
 public:
-    virtual                     ~GpServiceFactory   (void) noexcept {}
+    virtual                     ~GpServiceFactory   (void) noexcept = default;
 
     virtual GpSP<GpService>     NewInstance         (void) const = 0;
 };

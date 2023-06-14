@@ -5,7 +5,7 @@ namespace GPlatform {
 
 GpServiceMainTask::~GpServiceMainTask (void) noexcept
 {
-    CompleteStartPromise(MakeSP<GpItcResult>());
+    CompleteStartPromise(MakeSP<StartItcResultT>(size_t(0)));
     GpService::SRequestStop();
 }
 

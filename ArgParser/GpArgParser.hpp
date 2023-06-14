@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GpArgBaseDesc.hpp"
+#include "GpArgBaseDescFactory.hpp"
 
 namespace boost::program_options
 {
@@ -17,10 +18,10 @@ public:
     using OptDescT  = boost::program_options::options_description;
 
 public:
-    static void                 SParse          (const size_t       aArgc,
-                                                 char**             aArgv,
-                                                 GpArgBaseDesc&     aOut,
-                                                 std::string_view   aDescText);
+    static GpArgBaseDesc::SP    SParse          (const size_t                   aArgc,
+                                                 char**                         aArgv,
+                                                 const GpArgBaseDescFactory&    aFactory,
+                                                 std::u8string_view             aDescText);
 
 private:
     static void                 SFillOptions    (OptDescT&              aOptDesc,

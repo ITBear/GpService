@@ -2,6 +2,8 @@
 
 #include "ArgParser/GpArgBaseDesc.hpp"
 #include "GpServiceCfgBaseDesc.hpp"
+#include "../GpLog/GpLogCore/Tasks/GpLogTaskFiberBase.hpp"
+#include "../GpCore2/GpReflection/GpReflectManager.hpp"
 
 namespace GPlatform {
 
@@ -11,11 +13,14 @@ public:
     CLASS_REMOVE_CTRS_MOVE_COPY(GpServiceMainTask)
     CLASS_DD(GpServiceMainTask)
 
-    using EventOptRefT  = std::optional<std::reference_wrapper<GpEvent>>;
+    using EventOptRefT      = std::optional<std::reference_wrapper<GpEvent>>;
+    using StartItcPromiseT  = GpItcPromise<size_t>;
+    using StartItcFutureT   = GpItcFuture<size_t>;
+    using StartItcResultT   = GpItcResult<size_t>;
 
 protected:
-    inline                      GpServiceMainTask       (std::string                    aName,
-                                                         GpItcPromise&&                 aStartPromise,
+    inline                      GpServiceMainTask       (std::u8string                  aName,
+                                                         StartItcPromiseT&&             aStartPromise,
                                                          const GpArgBaseDesc&           aCmdLineArgsDesc,
                                                          const GpServiceCfgBaseDesc&    aServiceCfgDesc) noexcept;
     virtual                     ~GpServiceMainTask      (void) noexcept override;
@@ -31,22 +36,22 @@ protected:
     const T&                    ServiceCfgAs            (void) const;
 
 protected:
-    inline void                 CompleteStartPromise    (GpItcResult::SP aResult) noexcept {iStartPromise.Complete(std::move(aResult));}
+    void                        CompleteStartPromise    (StartItcResultT::SP aResult) noexcept {iStartPromise.Complete(std::move(aResult));}
 
     virtual void                OnStart                 (void) override = 0;
     virtual GpTaskDoRes         OnStep                  (EventOptRefT aEvent) override = 0;
     virtual void                OnStop                  (void) noexcept override = 0;
 
 private:
-    GpItcPromise                iStartPromise;
+    StartItcPromiseT            iStartPromise;
     const GpArgBaseDesc&        iCmdLineArgsDesc;
     const GpServiceCfgBaseDesc& iServiceCfgDesc;
 };
 
 GpServiceMainTask::GpServiceMainTask
 (
-    std::string                 aName,
-    GpItcPromise&&              aStartPromise,
+    std::u8string                   aName,
+    StartItcPromiseT&&          aStartPromise,
     const GpArgBaseDesc&        aCmdLineArgsDesc,
     const GpServiceCfgBaseDesc& aServiceCfgDesc
 ) noexcept:
