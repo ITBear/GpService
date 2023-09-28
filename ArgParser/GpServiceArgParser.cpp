@@ -1,4 +1,4 @@
-#include "GpArgParser.hpp"
+#include "GpServiceArgParser.hpp"
 
 GP_WARNING_PUSH()
 GP_WARNING_DISABLE(conversion)
@@ -14,18 +14,18 @@ GP_WARNING_POP()
 
 namespace GPlatform {
 
-GpArgBaseDesc::SP   GpArgParser::SParse
+GpServiceArgBaseDesc::SP    GpServiceArgParser::SParse
 (
-    const size_t                aArgc,
-    char**                      aArgv,
-    const GpArgBaseDescFactory& aFactory,
-    std::u8string_view          aDescText
+    const size_t                        aArgc,
+    char**                              aArgv,
+    const GpServiceArgBaseDescFactory&  aFactory,
+    std::u8string_view                  aDescText
 )
 {
     std::string descText(GpUTF::S_UTF8_To_STR(aDescText));
     OptDescT optDesc(std::move(descText));
 
-    GpArgBaseDesc::SP descSP = aFactory.NewInstance(aArgc, aArgv);
+    GpServiceArgBaseDesc::SP descSP = aFactory.NewInstance(aArgc, aArgv);
 
     SFillOptions(optDesc, descSP.V());
     SParseOptions(aArgc, aArgv, optDesc, descSP.V());
@@ -33,10 +33,10 @@ GpArgBaseDesc::SP   GpArgParser::SParse
     return descSP;
 }
 
-void    GpArgParser::SFillOptions
+void    GpServiceArgParser::SFillOptions
 (
-    OptDescT&               aOptDesc,
-    const GpArgBaseDesc&    aOut
+    OptDescT&                   aOptDesc,
+    const GpServiceArgBaseDesc& aOut
 )
 {
     aOptDesc.add_options()("help", "Show help message");
@@ -141,17 +141,24 @@ void    GpArgParser::SFillOptions
     }
 }
 
-void    GpArgParser::SParseOptions
+void    GpServiceArgParser::SParseOptions
 (
-    const size_t        aArgc,
-    char**              aArgv,
-    const OptDescT&     aOptDesc,
-    GpArgBaseDesc&      aOut
+    const size_t            aArgc,
+    char**                  aArgv,
+    const OptDescT&         aOptDesc,
+    GpServiceArgBaseDesc&   aOut
 )
 {
     boost::program_options::variables_map vm;
-    boost::program_options::store(boost::program_options::parse_command_line(NumOps::SConvert<int>(aArgc), aArgv, aOptDesc), vm);
-    boost::program_options::notify(vm);
+
+    try
+    {
+        boost::program_options::store(boost::program_options::parse_command_line(NumOps::SConvert<int>(aArgc), aArgv, aOptDesc), vm);
+        boost::program_options::notify(vm);
+    } catch (const std::exception& ex)
+    {
+        THROW_GP(u8"Failed to parse cmd line arguments: "_sv + ex.what());
+    }
 
     const GpReflectModel&   model   = aOut.ReflectModel();
     void*                   dataPtr = aOut.ReflectDataPtr();

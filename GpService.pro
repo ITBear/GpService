@@ -20,22 +20,23 @@ os_linux{
 #------------------------------- LIBS END ----------------------------------
 
 SOURCES += \
-	ArgParser/GpArgBaseDesc.cpp \
-	ArgParser/GpArgParser.cpp \
+	ArgParser/GpServiceArgBaseDesc.cpp \
+	ArgParser/GpServiceArgBaseDescFactory.cpp \
+	ArgParser/GpServiceArgParser.cpp \
+	Config/GpServiceCfgBaseDesc.cpp \
+	Config/GpServiceCfgBaseDescFactory.cpp \
+	Config/GpServiceCfgTaskManagerDesc.cpp \
 	GpService.cpp \
-	GpServiceCfgBaseDesc.cpp \
-	GpServiceCfgTaskManagerDesc.cpp \
-	GpServiceMainTask.cpp \
-	GpServiceStartFlag.cpp
+	GpServiceMainTask.cpp
 
 HEADERS += \
-    ArgParser/GpArgBaseDesc.hpp \
-    ArgParser/GpArgBaseDescFactory.hpp \
-    ArgParser/GpArgParser.hpp \
+    ArgParser/GpServiceArgBaseDesc.hpp \
+    ArgParser/GpServiceArgBaseDescFactory.hpp \
+    ArgParser/GpServiceArgParser.hpp \
+    Config/GpServiceCfgBaseDesc.hpp \
+    Config/GpServiceCfgBaseDescFactory.hpp \
+    Config/GpServiceCfgTaskManagerDesc.hpp \
     GpService.hpp \
-    GpServiceCfgBaseDesc.hpp \
-    GpServiceCfgTaskManagerDesc.hpp \
-    GpServiceFactory.hpp \
     GpServiceMainTask.hpp \
-    GpServiceStartFlag.hpp \
+    GpServiceMainTaskFactory.hpp \
     GpService_global.hpp

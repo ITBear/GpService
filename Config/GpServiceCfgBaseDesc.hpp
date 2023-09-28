@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GpServiceCfgTaskManagerDesc.hpp"
-#include "../GpLog/GpLogCore/Config/GpLogConfigDesc.hpp"
+#include "../../GpLog/GpLogCore/Config/GpLogConfigDesc.hpp"
 
 namespace GPlatform {
 
