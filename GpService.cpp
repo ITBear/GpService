@@ -205,11 +205,9 @@ int GpService::SStartAndWaitForStop
     GpServiceMainTaskFactory::SP    aServiceMainTaskFactory
 )
 {
-    //Create log factory
+    // Create log factory
     GpLogConsumersFactory::SP logConsumersFactorySP = MakeSP<GpLogConsumersFactory>();
-
-    //Add default (console and file) output processors
-    logConsumersFactorySP->AddDefaultProcessors();
+    logConsumersFactorySP->AddDefaultProcessorConsole();
 
     return SStartAndWaitForStop
     (
@@ -598,7 +596,7 @@ void    GpService::StartMainTask (GpServiceMainTaskFactory::SP aServiceMainTaskF
     iMainTaskDoneFuture     = mainTask->GetDoneFuture();
 
     // Start task
-    GpTaskScheduler::S().NewToReady(std::move(mainTask), 0.0_si_s);
+    GpTaskScheduler::S().NewToReady(std::move(mainTask));
 
     // Wait for started
     while (!iMainTaskStartFuture.Vn().IsReady())
