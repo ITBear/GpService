@@ -127,7 +127,7 @@ int GpService::SStartAndWaitForStop
             while (!done)
             {
                 // Wait for
-                GpService::sServiceCondVar.WaitFor(0.2_si_s);
+                GpService::sServiceCondVar.WaitForAndReset(0.2_si_s);
 
                 // Check if stop requested
                 if (sIsStopRequested.test()) [[unlikely]]
@@ -149,7 +149,6 @@ int GpService::SStartAndWaitForStop
                     GpStringUtils::SCout(u8"[GpService::SStartAndWaitForStop]: OS signal received: "_sv + int(GpService::sSignalReceived));
                     done = true;
                 }
-
 
                 // Check timeout
                 {
@@ -599,9 +598,9 @@ void    GpService::StartMainTask (GpServiceMainTaskFactory::SP aServiceMainTaskF
     GpTaskScheduler::S().NewToReady(std::move(mainTask));
 
     // Wait for started
-    while (!iMainTaskStartFuture.Vn().IsReady())
+    while (!iMainTaskStartFuture.Vn().WaitFor(100.0_si_ms))
     {
-        iMainTaskStartFuture.Vn().WaitFor(100.0_si_ms);
+        // NOP
     }
 
     // Check start result
@@ -609,10 +608,6 @@ void    GpService::StartMainTask (GpServiceMainTaskFactory::SP aServiceMainTaskF
     (
         iMainTaskStartFuture.V(),
         [&](typename GpTaskFiber::StartFutureT::value_type&)//OnSuccessFnT
-        {
-            // NOP
-        },
-        [](void)//OnEmptyFnT
         {
             // NOP
         },
@@ -631,9 +626,9 @@ void    GpService::CheckMainTaskDoneResult (void)
     }
 
     // Wait for main task done
-    while (!iMainTaskDoneFuture->IsReady())
+    while (!iMainTaskDoneFuture.Vn().WaitFor(100.0_si_ms))
     {
-        iMainTaskDoneFuture->WaitFor(100.0_si_ms);
+        // NOP
     }
 
     // Check done result
@@ -641,10 +636,6 @@ void    GpService::CheckMainTaskDoneResult (void)
     (
         iMainTaskDoneFuture.V(),
         [&](typename GpTaskFiber::StartFutureT::value_type&)//OnSuccessFnT
-        {
-            // NOP
-        },
-        [](void)//OnEmptyFnT
         {
             // NOP
         },
