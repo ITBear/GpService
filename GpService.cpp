@@ -11,8 +11,6 @@
 #include "../GpCore2/GpUtils/Threads/Timers/GpTimersManager.hpp"
 #include "../GpJson/GpJsonSerializer.hpp"
 #include "../GpLog/GpLogCore/GpLog.hpp"
-
-
 #include "ArgParser/GpServiceArgParser.hpp"
 
 #include <iostream>
@@ -24,6 +22,8 @@
 #endif
 
 namespace GPlatform {
+
+GP_IMPLEMENT_LIB(GpServiceLib)
 
 GpService::SP       GpService::sService;
 std::mutex          GpService::sServiceMutex;
@@ -86,6 +86,9 @@ int GpService::SStartAndWaitForStop
         u8"=--------------------------------- Start application --------------------------=\n" \
         u8"================================================================================"_sv
     );
+
+    // Write system info to log
+    LOG_SYS_INFO(u8"System info");
 
     try
     {
@@ -151,14 +154,14 @@ int GpService::SStartAndWaitForStop
                 }
 
                 // Check timeout
-                {
-                    //const auto nowSTS = GpDateTimeOps::SSteadyTS_ms();
-                    //if ((nowSTS - beginSTS) > 4.0_si_s)
-                    //{
-                    //  GpStringUtils::SCout(u8"[GpService::SStartAndWaitForStop]: Check timeout"_sv);
-                    //  done = true;
-                    //}
-                }
+                //{
+                //  const auto nowSTS = GpDateTimeOps::SSteadyTS_ms();
+                //  if ((nowSTS - beginSTS) > 7.0_si_s)
+                //  {
+                //      GpStringUtils::SCout(u8"[GpService::SStartAndWaitForStop]: Check timeout"_sv);
+                //      done = true;
+                //  }
+                //}
             }
         }
 
@@ -453,7 +456,7 @@ void    GpService::ReadConfig (GpServiceCfgBaseDescFactory::SP  aCfgBaseDescFact
     if (cfgFileName.length() > 0)
     {
         GpBytesArray    fileData    = GpFileUtils::SReadAll(cfgFileName);
-        std::u8string   fileDataStr = std::u8string(GpSpanPtrCharR(fileData).AsStringViewU8());
+        std::u8string   fileDataStr = std::u8string(GpSpanPtrCharU8R(fileData).AsStringViewU8());
         GpJsonSerializer::SFromStrInsitu(fileDataStr, iCfgDesc.V(), {});
     } else
     {

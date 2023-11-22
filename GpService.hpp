@@ -4,6 +4,7 @@
 #include "Config/GpServiceCfgBaseDescFactory.hpp"
 #include "ArgParser/GpServiceArgBaseDescFactory.hpp"
 #include "../GpCore2/GpUtils/SyncPrimitives/GpConditionVarFlag.hpp"
+#include "../GpCore2/GpUtils/Other/GpLinkedLibsInfo.hpp"
 #include "../GpLog/GpLogCore/Consumers/GpLogConsumersFactory.hpp"
 
 #if defined(GP_POSIX)
@@ -11,6 +12,8 @@
 #endif// #if defined(GP_POSIX)
 
 namespace GPlatform {
+
+GP_DECLARE_LIB(GP_SERVICE_API, GpServiceLib)
 
 class GP_SERVICE_API GpService
 {
