@@ -2,8 +2,8 @@
 
 #include "ArgParser/GpServiceArgBaseDesc.hpp"
 #include "Config/GpServiceCfgBaseDesc.hpp"
-#include "../GpCore2/GpReflection/GpReflectManager.hpp"
-#include "../GpCore2/GpTasks/Fibers/GpTaskFiber.hpp"
+#include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpTasks/Fibers/GpTaskFiber.hpp>
 
 namespace GPlatform {
 

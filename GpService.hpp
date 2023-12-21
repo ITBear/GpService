@@ -3,9 +3,9 @@
 #include "GpServiceMainTaskFactory.hpp"
 #include "Config/GpServiceCfgBaseDescFactory.hpp"
 #include "ArgParser/GpServiceArgBaseDescFactory.hpp"
-#include "../GpCore2/GpUtils/SyncPrimitives/GpConditionVarFlag.hpp"
-#include "../GpCore2/GpUtils/Other/GpLinkedLibsInfo.hpp"
-#include "../GpLog/GpLogCore/Consumers/GpLogConsumersFactory.hpp"
+#include <GpCore2/GpUtils/SyncPrimitives/GpConditionVarFlag.hpp>
+#include <GpCore2/GpUtils/Other/GpLinkedLibsInfo.hpp>
+#include <GpLog/GpLogCore/Consumers/GpLogConsumersFactory.hpp>
 
 #if defined(GP_POSIX)
 #   include <csignal>
