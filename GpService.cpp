@@ -157,7 +157,7 @@ int GpService::SStartAndWaitForStop
                 // Check timeout
                 //{
                 //  const auto nowSTS = GpDateTimeOps::SSteadyTS_ms();
-                //  if ((nowSTS - beginSTS) > 7.0_si_s)
+                //  if ((nowSTS - beginSTS) > 15.0_si_s)
                 //  {
                 //      GpStringUtils::SCout(u8"[GpService::SStartAndWaitForStop]: Check timeout"_sv);
                 //      done = true;
@@ -379,9 +379,6 @@ int GpService::Stop (void) noexcept
         GpStringUtils::SCout("[GpService::Stop]: StopTaskScheduler()...");
         StopTaskScheduler();
 
-        GpStringUtils::SCout("[GpService::Stop]: CheckMainTaskDoneResult()...");
-        CheckMainTaskDoneResult();
-
         GpStringUtils::SCout("[GpService::Stop]: StopFibers()...");
         StopFibers();
 
@@ -582,24 +579,36 @@ void    GpService::StartTaskScheduler (void)
 
 void    GpService::StopTaskScheduler (void)
 {
+    if (iMainTaskSP.IsNotNULL())
+    {
+        GpStringUtils::SCout("[GpService::Stop]: Send stop to main task...");
+
+        // Send stop to main task
+        iMainTaskSP->UpStopRequestFlag();
+        GpTaskScheduler::S().MakeTaskReady(iMainTaskSP->Id());
+
+        // Wait for stop
+        CheckMainTaskDoneResult();
+    }
+
     GpTaskScheduler::SStopAndClear();
 }
 
 void    GpService::StartMainTask (GpServiceMainTaskFactory::SP aServiceMainTaskFactory)
 {
     // Create main task
-    GpServiceMainTask::SP mainTask = aServiceMainTaskFactory->NewInstance
+    iMainTaskSP = aServiceMainTaskFactory->NewInstance
     (
         iArgsDesc.V(),
         iCfgDesc.V()
     );
 
     // Get futures
-    iMainTaskStartFuture    = mainTask->GetStartFuture();
-    iMainTaskDoneFuture     = mainTask->GetDoneFuture();
+    iMainTaskStartFuture    = iMainTaskSP->GetStartFuture();
+    iMainTaskDoneFuture     = iMainTaskSP->GetDoneFuture();
 
     // Start task
-    GpTaskScheduler::S().NewToReady(std::move(mainTask));
+    GpTaskScheduler::S().NewToReady(iMainTaskSP);
 
     // Wait for started
     while (!iMainTaskStartFuture.Vn().WaitFor(100.0_si_ms))

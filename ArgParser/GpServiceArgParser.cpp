@@ -22,7 +22,7 @@ GpServiceArgBaseDesc::SP    GpServiceArgParser::SParse
     std::u8string_view                  aDescText
 )
 {
-    std::string descText(GpUTF::S_UTF8_To_STR(aDescText));
+    std::string descText(GpUTF::S_As_STR(aDescText));
     OptDescT optDesc(std::move(descText));
 
     GpServiceArgBaseDesc::SP descSP = aFactory.NewInstance(aArgc, aArgv);
@@ -77,7 +77,7 @@ void    GpServiceArgParser::SFillOptions
                 {
                     aOptDesc.add_options()
                     (
-                        GpUTF::S_UTF8_To_STR(propName).data(),
+                        GpUTF::S_As_STR(propName).data(),
                         boost::program_options::value<boost::container::string>(),
                         ""
                     );
@@ -85,7 +85,7 @@ void    GpServiceArgParser::SFillOptions
                 {
                     aOptDesc.add_options()
                     (
-                        GpUTF::S_UTF8_To_STR(propName).data(),
+                        GpUTF::S_As_STR(propName).data(),
                         boost::program_options::value<std::vector<boost::container::string>>()->multitoken(),
                         ""
                     );
@@ -97,7 +97,7 @@ void    GpServiceArgParser::SFillOptions
                 {
                     aOptDesc.add_options()
                     (
-                        GpUTF::S_UTF8_To_STR(propName).data(),
+                        GpUTF::S_As_STR(propName).data(),
                         ""
                     );
                 } else
@@ -113,11 +113,11 @@ void    GpServiceArgParser::SFillOptions
             {
                 if (propContainer == GpReflectContainerType::NO)
                 {
-                    aOptDesc.add_options()(GpUTF::S_UTF8_To_STR(propName).data(), "");
+                    aOptDesc.add_options()(GpUTF::S_As_STR(propName).data(), "");
 
                     aOptDesc.add_options()
                     (
-                        GpUTF::S_UTF8_To_STR(propName).data(),
+                        GpUTF::S_As_STR(propName).data(),
                         boost::program_options::value<std::vector<boost::container::string>>()->multitoken(),
                         ""
                     );
@@ -169,12 +169,12 @@ void    GpServiceArgParser::SParseOptions
         const GpReflectType::EnumT          propType        = propInfo.Type();
         const GpReflectContainerType::EnumT propContainer   = propInfo.Container();
 
-        if (!vm.count(GpUTF::S_UTF8_To_STR(propName).data()))
+        if (!vm.count(GpUTF::S_As_STR(propName).data()))
         {
             continue;
         }
 
-        const auto& optVal = vm[GpUTF::S_UTF8_To_STR(propName).data()];
+        const auto& optVal = vm[GpUTF::S_As_STR(propName).data()];
 
         if (propContainer == GpReflectContainerType::NO)
         {
@@ -189,7 +189,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_SInt8(dataPtr) = NumOps::SConvert<s_int_8>(StrOps::SToSI64(sv));
                 } break;
                 case GpReflectType::U_INT_8:
@@ -201,7 +201,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_UInt8(dataPtr) = NumOps::SConvert<u_int_8>(StrOps::SToUI64(sv));
                 } break;
                 case GpReflectType::S_INT_16:
@@ -213,7 +213,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_SInt16(dataPtr) = NumOps::SConvert<s_int_16>(StrOps::SToSI64(sv));
                 } break;
                 case GpReflectType::U_INT_16:
@@ -225,7 +225,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_UInt16(dataPtr) = NumOps::SConvert<u_int_16>(StrOps::SToUI64(sv));
                 } break;
                 case GpReflectType::S_INT_32:
@@ -237,7 +237,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_SInt32(dataPtr) = NumOps::SConvert<s_int_32>(StrOps::SToSI64(sv));
                 } break;
                 case GpReflectType::U_INT_32:
@@ -249,7 +249,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_UInt32(dataPtr) = NumOps::SConvert<u_int_32>(StrOps::SToUI64(sv));
                 } break;
                 case GpReflectType::S_INT_64:
@@ -261,7 +261,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_SInt64(dataPtr) = NumOps::SConvert<s_int_64>(StrOps::SToSI64(sv));
                 } break;
                 case GpReflectType::U_INT_64:
@@ -273,7 +273,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_UInt64(dataPtr) = NumOps::SConvert<u_int_64>(StrOps::SToUI64(sv));
                 } break;
                 case GpReflectType::DOUBLE:
@@ -285,7 +285,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_Double(dataPtr) = NumOps::SConvert<double>(StrOps::SToDouble(sv));
                 } break;
                 case GpReflectType::FLOAT:
@@ -297,7 +297,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_Float(dataPtr) = NumOps::SConvert<float>(StrOps::SToDouble(sv));
                 } break;
                 case GpReflectType::UUID:
@@ -309,7 +309,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_UUID(dataPtr) = GpUUID::SFromString(sv);
                 } break;
                 case GpReflectType::STRING:
@@ -321,7 +321,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_String(dataPtr) = sv;
                 } break;
                 case GpReflectType::BLOB:
@@ -333,7 +333,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_BLOB(dataPtr) = StrOps::SToBytesHex(sv);
                 } break;
                 case GpReflectType::ENUM:
@@ -345,7 +345,7 @@ void    GpServiceArgParser::SParseOptions
                     );
 
                     const auto&         v   = optVal.as<boost::container::string>();
-                    std::u8string_view  sv  = GpUTF::S_STR_To_UTF8(v.data(), v.size());
+                    std::u8string_view  sv  = GpUTF::S_As_UTF8(v.data(), v.size());
                     propInfo.Value_Enum(dataPtr).FromString(GpUTF::SToUpper(sv));
                 } break;
                 case GpReflectType::ENUM_FLAGS:
@@ -360,7 +360,7 @@ void    GpServiceArgParser::SParseOptions
                     std::vector<std::u8string> vs;
                     for (const auto& s: v)
                     {
-                        vs.emplace_back(GpUTF::S_STR_To_UTF8(s));
+                        vs.emplace_back(GpUTF::S_As_UTF8(s));
                     }
 
                     propInfo.Value_EnumFlags(dataPtr).FromStringArray(vs);
@@ -388,7 +388,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_SInt8(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(NumOps::SConvert<s_int_8>(StrOps::SToSI64(GpUTF::S_STR_To_UTF8(e.data(), e.size()))));
+                        vec.emplace_back(NumOps::SConvert<s_int_8>(StrOps::SToSI64(GpUTF::S_As_UTF8(e.data(), e.size()))));
                     }
                 } break;
                 case GpReflectType::U_INT_8:
@@ -396,7 +396,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_UInt8(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(NumOps::SConvert<u_int_8>(StrOps::SToUI64(GpUTF::S_STR_To_UTF8(e.data(), e.size()))));
+                        vec.emplace_back(NumOps::SConvert<u_int_8>(StrOps::SToUI64(GpUTF::S_As_UTF8(e.data(), e.size()))));
                     }
                 } break;
                 case GpReflectType::S_INT_16:
@@ -404,7 +404,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_SInt16(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(NumOps::SConvert<s_int_16>(StrOps::SToSI64(GpUTF::S_STR_To_UTF8(e.data(), e.size()))));
+                        vec.emplace_back(NumOps::SConvert<s_int_16>(StrOps::SToSI64(GpUTF::S_As_UTF8(e.data(), e.size()))));
                     }
                 } break;
                 case GpReflectType::U_INT_16:
@@ -412,7 +412,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_UInt16(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(NumOps::SConvert<u_int_16>(StrOps::SToUI64(GpUTF::S_STR_To_UTF8(e.data(), e.size()))));
+                        vec.emplace_back(NumOps::SConvert<u_int_16>(StrOps::SToUI64(GpUTF::S_As_UTF8(e.data(), e.size()))));
                     }
                 } break;
                 case GpReflectType::S_INT_32:
@@ -420,7 +420,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_SInt32(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(NumOps::SConvert<s_int_32>(StrOps::SToSI64(GpUTF::S_STR_To_UTF8(e.data(), e.size()))));
+                        vec.emplace_back(NumOps::SConvert<s_int_32>(StrOps::SToSI64(GpUTF::S_As_UTF8(e.data(), e.size()))));
                     }
                 } break;
                 case GpReflectType::U_INT_32:
@@ -428,7 +428,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_UInt32(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(NumOps::SConvert<u_int_32>(StrOps::SToUI64(GpUTF::S_STR_To_UTF8(e.data(), e.size()))));
+                        vec.emplace_back(NumOps::SConvert<u_int_32>(StrOps::SToUI64(GpUTF::S_As_UTF8(e.data(), e.size()))));
                     }
                 } break;
                 case GpReflectType::S_INT_64:
@@ -436,7 +436,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_SInt64(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(NumOps::SConvert<s_int_64>(StrOps::SToSI64(GpUTF::S_STR_To_UTF8(e.data(), e.size()))));
+                        vec.emplace_back(NumOps::SConvert<s_int_64>(StrOps::SToSI64(GpUTF::S_As_UTF8(e.data(), e.size()))));
                     }
                 } break;
                 case GpReflectType::U_INT_64:
@@ -444,7 +444,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_UInt64(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(NumOps::SConvert<u_int_64>(StrOps::SToUI64(GpUTF::S_STR_To_UTF8(e.data(), e.size()))));
+                        vec.emplace_back(NumOps::SConvert<u_int_64>(StrOps::SToUI64(GpUTF::S_As_UTF8(e.data(), e.size()))));
                     }
                 } break;
                 case GpReflectType::DOUBLE:
@@ -452,7 +452,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_Double(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(NumOps::SConvert<double>(StrOps::SToDouble(GpUTF::S_STR_To_UTF8(e.data(), e.size()))));
+                        vec.emplace_back(NumOps::SConvert<double>(StrOps::SToDouble(GpUTF::S_As_UTF8(e.data(), e.size()))));
                     }
                 } break;
                 case GpReflectType::FLOAT:
@@ -460,7 +460,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_Float(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(NumOps::SConvert<float>(StrOps::SToDouble(GpUTF::S_STR_To_UTF8(e.data(), e.size()))));
+                        vec.emplace_back(NumOps::SConvert<float>(StrOps::SToDouble(GpUTF::S_As_UTF8(e.data(), e.size()))));
                     }
                 } break;
                 case GpReflectType::UUID:
@@ -468,7 +468,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_UUID(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(GpUUID::SFromString(GpUTF::S_STR_To_UTF8(e.data(), e.size())));
+                        vec.emplace_back(GpUUID::SFromString(GpUTF::S_As_UTF8(e.data(), e.size())));
                     }
                 } break;
                 case GpReflectType::STRING:
@@ -476,7 +476,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_String(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        std::u8string_view sv = GpUTF::S_STR_To_UTF8(e.data(), e.size());
+                        std::u8string_view sv = GpUTF::S_As_UTF8(e.data(), e.size());
                         vec.emplace_back(sv);
                     }
                 } break;
@@ -485,7 +485,7 @@ void    GpServiceArgParser::SParseOptions
                     auto& vec = propInfo.Vec_BLOB(dataPtr); vec.clear();
                     for (const auto& e: v)
                     {
-                        vec.emplace_back(StrOps::SToBytesHex(GpUTF::S_STR_To_UTF8(e.data(), e.size())));
+                        vec.emplace_back(StrOps::SToBytesHex(GpUTF::S_As_UTF8(e.data(), e.size())));
                     }
                 } break;
                 case GpReflectType::ENUM:       [[fallthrough]];

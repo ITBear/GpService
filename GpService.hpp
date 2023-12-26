@@ -75,6 +75,8 @@ private:
     const std::u8string                         iName;
     GpServiceArgBaseDesc::SP                    iArgsDesc;
     GpServiceCfgBaseDesc::SP                    iCfgDesc;
+
+    GpServiceMainTask::SP                       iMainTaskSP;
     GpTask::StartFutureT::SP                    iMainTaskStartFuture;
     GpTask::DoneFutureT::SP                     iMainTaskDoneFuture;
 
