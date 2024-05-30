@@ -1,7 +1,7 @@
 #pragma once
 
 #include "GpServiceCfgTaskManagerDesc.hpp"
-#include "../../GpLog/GpLogCore/Config/GpLogConfigDesc.hpp"
+#include <GpLog/GpLogCore/Config/GpLogConfigDesc.hpp>
 
 namespace GPlatform {
 
@@ -9,7 +9,7 @@ class GP_SERVICE_API GpServiceCfgBaseDesc: public GpReflectObject
 {
 public:
     CLASS_DD(GpServiceCfgBaseDesc)
-    REFLECT_DECLARE(u8"7005f76c-e11c-441d-9d4f-dd9b7f0005de"_uuid)
+    REFLECT_DECLARE("7005f76c-e11c-441d-9d4f-dd9b7f0005de"_uuid)
 
 public:
                                     GpServiceCfgBaseDesc    (void) noexcept = default;
@@ -36,4 +36,4 @@ task_manager(std::move(aDesc.task_manager))
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

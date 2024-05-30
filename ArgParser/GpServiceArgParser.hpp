@@ -18,18 +18,18 @@ public:
     using OptDescT  = boost::program_options::options_description;
 
 public:
-    static GpServiceArgBaseDesc::SP SParse          (const size_t                       aArgc,
+    static GpServiceArgBaseDesc::SP SParse          (size_t                             aArgc,
                                                      char**                             aArgv,
                                                      const GpServiceArgBaseDescFactory& aFactory,
-                                                     std::u8string_view                 aDescText);
+                                                     std::string_view                   aDescText);
 
 private:
     static void                     SFillOptions    (OptDescT&                      aOptDesc,
                                                      const GpServiceArgBaseDesc&    aOut);
-    static void                     SParseOptions   (const size_t           aArgc,
+    static void                     SParseOptions   (size_t                 aArgc,
                                                      char**                 aArgv,
                                                      const OptDescT&        aOptDesc,
                                                      GpServiceArgBaseDesc&  aOut);
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

@@ -19,4 +19,4 @@ public:
                                                                  const GpServiceCfgBaseDesc& aServiceCfgDesc) const = 0;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

@@ -11,6 +11,8 @@
 #include <GpCore2/GpUtils/Random/GpSRandom.hpp>
 #include <GpCore2/GpUtils/Threads/GpThread.hpp>
 #include <GpCore2/GpUtils/Threads/Timers/GpTimersManager.hpp>
+#include <GpCore2/GpUtils/Debugging/GpStackTrace.hpp>
+
 #include <GpJson/GpJsonSerializer.hpp>
 #include <GpLog/GpLogCore/GpLog.hpp>
 
@@ -24,16 +26,11 @@
 
 namespace GPlatform {
 
-GP_IMPLEMENT_LIB(GpServiceLib)
-
-GpService::SP       GpService::sService;
-std::mutex          GpService::sServiceMutex;
-GpConditionVarFlag  GpService::sServiceCondVar;
-std::atomic_flag    GpService::sIsStopRequested = false;
-
-#if defined(GP_POSIX)
-volatile std::sig_atomic_t  GpService::sSignalReceived = 0;
-#endif// #if defined(GP_POSIX)
+GpService::SP               GpService::sService;
+std::mutex                  GpService::sServiceMutex;
+GpConditionVarFlag          GpService::sServiceCondVar;
+std::atomic_flag            GpService::sIsStopRequested;
+volatile std::sig_atomic_t  GpService::sSignalReceived  = 0;
 
 GpService::~GpService (void) noexcept
 {
@@ -41,7 +38,7 @@ GpService::~GpService (void) noexcept
 
 int GpService::SStartAndWaitForStop
 (
-    std::u8string                   aName,
+    std::string                     aName,
     const size_t                    aArgc,
     char**                          aArgv,
     GpLogConsumersFactory::SP       aLogConsumersFactory,
@@ -50,23 +47,28 @@ int GpService::SStartAndWaitForStop
     GpServiceMainTaskFactory::SP    aServiceMainTaskFactory
 )
 {
-    GpThread::SSetSysNameForCurrent(u8"Main");
+    GpThread::SSetSysNameForCurrent("Main");
 
     int exitCode = EXIT_FAILURE;
 
     GpRAIIonDestruct onStop
     (
-        []()
+        [aName]()
         {
             const milliseconds_t appStopSteadyTS    = GpDateTimeOps::SSteadyTS_ms();
             const milliseconds_t appRunTime         = appStopSteadyTS - GpDateTimeOps::SSteadyTS_ms_AtAppStart();
 
             LOG_INFO
             (
-                  u8"================================================================================\n" \
-                  u8"=--------------------------------- Stop application ---------------------------=\n"_sv
-                + u8"= Total run time: "_sv + StrOps::SFromDouble(appRunTime.Value() / 1000.0) + u8" seconds\n" \
-                  u8"================================================================================\n\n"_sv
+                fmt::format
+                (
+                    "================================================================================\n" \
+                    "= STOP application: \"{}\"\n" \
+                    "= Total run time:   {} seconds\n" \
+                    "================================================================================\n\n",
+                    aName,
+                    StrOps::SFromDouble(appRunTime.Value() / 1000.0)
+                )
             );
 
             GpLog::S().Stop();
@@ -78,21 +80,25 @@ int GpService::SStartAndWaitForStop
         }
     );
 
-    // Init log
-    GpLog::SInit();
-
-    LOG_INFO
-    (
-        u8"================================================================================\n" \
-        u8"=--------------------------------- Start application --------------------------=\n" \
-        u8"================================================================================"_sv
-    );
-
-    // Write system info to log
-    LOG_SYS_INFO(u8"System info");
-
     try
     {
+        // Init log
+        GpLog::SInit();
+
+        LOG_INFO
+        (
+            fmt::format
+            (
+                "================================================================================\n" \
+                "= START application: \"{}\"\n" \
+                "================================================================================",
+                aName
+            )
+        );
+
+        // Write system info to log
+        LOG_SYS_INFO("System info");
+
         int startCode = EXIT_SUCCESS;
 
         // --- Start ---
@@ -123,6 +129,7 @@ int GpService::SStartAndWaitForStop
         if (startCode != EXIT_FAILURE)
         {
             //const auto beginSTS = GpDateTimeOps::SSteadyTS_ms();
+
             GpTask::DoneFutureT& mainTaskDoneFuture = GpService::sService->iMainTaskDoneFuture.V();
 
             // --- Wait for stop signal or for main task done ---
@@ -136,21 +143,21 @@ int GpService::SStartAndWaitForStop
                 // Check if stop requested
                 if (sIsStopRequested.test()) [[unlikely]]
                 {
-                    GpStringUtils::SCout(u8"[GpService::SStartAndWaitForStop]: sIsStopRequested.test() == true");
+                    GpStringUtils::SCout("[GpService::SStartAndWaitForStop]: sIsStopRequested.test() == true");
                     done = true;
                 }
 
                 // Check if main task done
                 if (mainTaskDoneFuture.IsReady()) [[unlikely]]
                 {
-                    GpStringUtils::SCout(u8"[GpService::SStartAndWaitForStop]: mainTaskDoneFuture.IsReady() == true");
+                    GpStringUtils::SCout("[GpService::SStartAndWaitForStop]: mainTaskDoneFuture.IsReady() == true");
                     done = true;
                 }
 
                 // Check OS signal
                 if (GpService::sSignalReceived != 0)
                 {
-                    GpStringUtils::SCout(u8"[GpService::SStartAndWaitForStop]: OS signal received: "_sv + int(GpService::sSignalReceived));
+                    GpStringUtils::SCout("[GpService::SStartAndWaitForStop]: OS signal received: "_sv + int(GpService::sSignalReceived));
                     done = true;
                 }
 
@@ -159,7 +166,7 @@ int GpService::SStartAndWaitForStop
                 //  const auto nowSTS = GpDateTimeOps::SSteadyTS_ms();
                 //  if ((nowSTS - beginSTS) > 15.0_si_s)
                 //  {
-                //      GpStringUtils::SCout(u8"[GpService::SStartAndWaitForStop]: Check timeout"_sv);
+                //      GpStringUtils::SCout("[GpService::SStartAndWaitForStop]: Check timeout"_sv);
                 //      done = true;
                 //  }
                 //}
@@ -195,16 +202,16 @@ int GpService::SStartAndWaitForStop
         exitCode = EXIT_FAILURE;
     }
 
-    LOG_INFO(u8"[GpService::SRun]: Done (exit code "_sv + exitCode + u8")"_sv);
+    LOG_INFO("[GpService::SRun]: Done (exit code "_sv + exitCode + ")"_sv);
 
-    GpStringUtils::SCout(u8"[GpService::SStartAndWaitForStop]: return exitCode = "_sv + exitCode);
+    GpStringUtils::SCout("[GpService::SStartAndWaitForStop]: return exitCode = "_sv + exitCode);
 
     return exitCode;
 }
 
 int GpService::SStartAndWaitForStop
 (
-    std::u8string                   aName,
+    std::string                     aName,
     GpServiceMainTaskFactory::SP    aServiceMainTaskFactory
 )
 {
@@ -249,33 +256,12 @@ void    GpService::SInterruptWaitForStop (void) noexcept
     GpStringUtils::SCout("[GpService::SInterruptWaitForStop]: end");
 }
 
-void    GpService::SPrintStacktrace (void)
-{
-#if defined(GP_POSIX)
-    void*       ptrs[100];
-    const int   size = backtrace(ptrs, 100);
-
-    fprintf(stderr, "Error: signal SIGSEGV:\n");
-    backtrace_symbols_fd(ptrs, size, STDERR_FILENO);
-#else
-#   error Unsupported platform
-#endif
-}
-
 void    GpService::SSystemSignalsHandler (int aSignalId) noexcept
 {
-#if defined(GP_POSIX)
     switch (aSignalId)
     {
+#if defined(GP_POSIX)
         case SIGHUP:
-        {
-            GpService::sSignalReceived = aSignalId;
-        } break;
-        case SIGTERM:// A termination request sent to the program.
-        {
-            GpService::sSignalReceived = aSignalId;
-        } break;
-        case SIGINT:// Receipt of an interactive attention signal.
         {
             GpService::sSignalReceived = aSignalId;
         } break;
@@ -287,36 +273,29 @@ void    GpService::SSystemSignalsHandler (int aSignalId) noexcept
         {
             //NOP
         } break;
+#endif
+        case SIGTERM:// A termination request sent to the program.
+        {
+            GpService::sSignalReceived = aSignalId;
+        } break;
+        case SIGINT:// Receipt of an interactive attention signal.
+        {
+            GpService::sSignalReceived = aSignalId;
+        } break;
         case SIGABRT:   [[fallthrough]];    //Abnormal termination of the program, such as a call to abort.
         case SIGFPE:    [[fallthrough]];    //An erroneous arithmetic operation, such as a divide by zero or an operation resulting in overflow
         case SIGILL:    [[fallthrough]];    //Detection of an illegal instruction.
         case SIGSEGV:   [[fallthrough]];
         default:
         {
-            SPrintStacktrace();
+            GpStackTrace::SPrintStacktrace
+            (
+                fmt::format("[GpService::SSystemSignalsHandler]: signal id = {}. ", aSignalId)
+            );
+
             std::exit(EXIT_FAILURE);
         }
     }
-#elif defined(GP_OS_WINDOWS)
-    switch (aSignalId)
-    {
-        case SIGTERM:   [[fallthrough]];    //A termination request sent to the program.
-        case SIGINT:                        //Receipt of an interactive attention signal.
-        {
-            SInterrupt();
-        } break;
-        case SIGABRT:   [[fallthrough]];    //Abnormal termination of the program, such as a call to abort.
-        case SIGFPE:    [[fallthrough]];    //An erroneous arithmetic operation, such as a divide by zero or an operation resulting in overflow
-        case SIGILL:    [[fallthrough]];    //Detection of an illegal instruction.
-        case SIGSEGV:   [[fallthrough]];    //An invalid access to storage.
-        default:
-        {
-            std::exit(EXIT_FAILURE);
-        }
-    }
-#else
-#   error Unsupported platform
-#endif
 }
 
 int GpService::Start
@@ -329,7 +308,8 @@ int GpService::Start
     GpServiceMainTaskFactory::SP    aServiceMainTaskFactory
 ) noexcept
 {
-    int startCode = EXIT_SUCCESS;
+    int     startCode       = EXIT_SUCCESS;
+    bool    isLogStarted    = false;
 
     try
     {
@@ -342,21 +322,40 @@ int GpService::Start
         ParseServiceArgs(aArgc, aArgv, aArgBaseDescFactory);
         ReadConfig(aCfgBaseDescFactory);
         SetSystemSignalsHandler();
-        StartLog(aLogConsumersFactory);     
+        StartLog(aLogConsumersFactory);
+        isLogStarted = true;
         StartFibers();
         StartTaskScheduler();
         StartMainTask(aServiceMainTaskFactory);
     } catch (const GpException& e)
     {
-        LOG_EXCEPTION(e);
+        if (isLogStarted)
+        {
+            LOG_EXCEPTION(e);
+        } else
+        {
+            GpStringUtils::SCerr(e.what());
+        }
         startCode = EXIT_FAILURE;
     } catch (const std::exception& e)
     {
-        LOG_EXCEPTION(e);
+        if (isLogStarted)
+        {
+            LOG_EXCEPTION(e);
+        } else
+        {
+            GpStringUtils::SCerr(e.what());
+        }
         startCode = EXIT_FAILURE;
     } catch (...)
     {
-        LOG_EXCEPTION();
+        if (isLogStarted)
+        {
+            LOG_EXCEPTION();
+        } else
+        {
+            GpStringUtils::SCerr("[GpService::Start]: Unknown exception catched");
+        }
         startCode = EXIT_FAILURE;
     }
 
@@ -421,10 +420,10 @@ int GpService::Stop (void) noexcept
         return ForkResT::PARENT;
     }
 
-    THROW_GP(u8"Fork failed (stage 1)"_sv);
+    THROW_GP("Fork failed (stage 1)"_sv);
 #else
-    THROW_GP(u8"fork() not supported on current platform..."_sv);
-#endif//#if defined(GP_POSIX)
+    THROW_GP("fork() not supported on current platform..."_sv);
+#endif// #if defined(GP_POSIX)
 
     return ForkResT::CHILD;
 }*/
@@ -441,7 +440,7 @@ void    GpService::ParseServiceArgs
         aArgc,
         aArgv,
         aArgBaseDescFactory.V(),
-        u8"Service command line arguments"_sv
+        "Service command line arguments"_sv
     );
 }
 
@@ -449,12 +448,12 @@ void    GpService::ReadConfig (GpServiceCfgBaseDescFactory::SP  aCfgBaseDescFact
 {
     iCfgDesc = aCfgBaseDescFactory->NewInstance();
 
-    std::u8string_view cfgFileName = iArgsDesc.V().Cfg();
+    std::string_view cfgFileName = iArgsDesc.V().Cfg();
 
     if (cfgFileName.length() > 0)
     {
         GpBytesArray    fileData    = GpFileUtils::SReadAll(cfgFileName);
-        std::u8string   fileDataStr = std::u8string(GpSpanPtrCharU8R(fileData).AsStringViewU8());
+        std::string     fileDataStr = std::string(GpSpanCharR(fileData).AsStringView());
         GpJsonSerializer::SFromStrInsitu(fileDataStr, iCfgDesc.V(), {});
     } else
     {
@@ -499,7 +498,7 @@ void    GpService::SetSystemSignalsHandler (void)
     (
         []()
         {
-            SPrintStacktrace();
+            GpStackTrace::SPrintStacktrace("[std::terminate]: ");
             std::abort();
         }
     );
@@ -515,12 +514,12 @@ void    GpService::StartLog (GpLogConsumersFactory::SP aConsumersFactory)
         // Create default config for log (only console output)
         GpLogConsumerConfigDesc::C::MapStr::SP consumers =
         {
-            {u8"console", MakeSP<GpLogConsumerConsoleConfigDesc>()}
+            {"console", MakeSP<GpLogConsumerConsoleConfigDesc>()}
         };
 
         logCfgDescCSP = MakeCSP<GpLogConfigDesc>
         (
-            GpLogLevel::INFO,
+            GpLogLevel::L_DEBUG,
             0.1_si_s,
             std::move(consumers)
         );
@@ -573,7 +572,11 @@ void    GpService::StartTaskScheduler (void)
     (
         GpTaskSchedulerV1Factory(),
         taskManagerCfg.executors_cnt,
-        taskManagerCfg.tasks_max_cnt
+        taskManagerCfg.tasks_max_cnt,
+        []()
+        {
+            GpService::SRequestStop();
+        }
     );
 }
 
@@ -584,8 +587,7 @@ void    GpService::StopTaskScheduler (void)
         GpStringUtils::SCout("[GpService::Stop]: Send stop to main task...");
 
         // Send stop to main task
-        iMainTaskSP->UpStopRequestFlag();
-        GpTaskScheduler::S().MakeTaskReady(iMainTaskSP->Id());
+        iMainTaskSP->RequestStop();
 
         // Wait for stop
         CheckMainTaskDoneResult();
@@ -659,4 +661,4 @@ void    GpService::CheckMainTaskDoneResult (void)
     );
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

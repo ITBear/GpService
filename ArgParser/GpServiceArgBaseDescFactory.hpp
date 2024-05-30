@@ -17,4 +17,4 @@ public:
                                                                          char**         aArgv) const;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

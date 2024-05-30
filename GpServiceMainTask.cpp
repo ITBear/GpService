@@ -6,4 +6,4 @@ GpServiceMainTask::~GpServiceMainTask (void) noexcept
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

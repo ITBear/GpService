@@ -16,4 +16,4 @@ public:
     virtual GpServiceCfgBaseDesc::SP    NewInstance                     (void) const;
 };
 
-}//namespace GPlatform
+}// namespace GPlatform

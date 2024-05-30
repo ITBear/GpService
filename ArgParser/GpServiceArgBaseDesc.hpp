@@ -11,7 +11,7 @@ class GP_SERVICE_API GpServiceArgBaseDesc: public GpReflectObject
 {
 public:
     CLASS_DD(GpServiceArgBaseDesc)
-    REFLECT_DECLARE(u8"56e26e3d-5f63-4dbc-b7c1-d23586c623ec"_uuid)
+    REFLECT_DECLARE("56e26e3d-5f63-4dbc-b7c1-d23586c623ec"_uuid)
 
 public:
     inline                  GpServiceArgBaseDesc    (void) noexcept;
@@ -20,11 +20,11 @@ public:
     virtual                 ~GpServiceArgBaseDesc   (void) noexcept override;
 
     bool                    Background              (void) const noexcept {return background;}
-    std::u8string_view      Cfg                     (void) const noexcept {return cfg;}
+    std::string_view        Cfg                     (void) const noexcept {return cfg;}
 
 private:
     bool                    background  = false;
-    std::u8string           cfg;
+    std::string             cfg;
 };
 
 GpServiceArgBaseDesc::GpServiceArgBaseDesc (void) noexcept
@@ -45,4 +45,4 @@ cfg       (std::move(aDesc.cfg))
 {
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

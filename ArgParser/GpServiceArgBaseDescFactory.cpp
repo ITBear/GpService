@@ -11,4 +11,4 @@ GpServiceArgBaseDesc::SP    GpServiceArgBaseDescFactory::NewInstance
     return MakeSP<GpServiceArgBaseDesc>();
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

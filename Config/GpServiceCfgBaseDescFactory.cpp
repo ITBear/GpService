@@ -7,4 +7,4 @@ GpServiceCfgBaseDesc::SP    GpServiceCfgBaseDescFactory::NewInstance (void) cons
     return MakeSP<GpServiceCfgBaseDesc>();
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

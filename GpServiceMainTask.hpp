@@ -14,27 +14,27 @@ public:
     CLASS_DD(GpServiceMainTask)
 
 protected:
-    inline                              GpServiceMainTask   (const GpServiceArgBaseDesc& aServiceArgsDesc,
-                                                             const GpServiceCfgBaseDesc& aServiceCfgDesc) noexcept;
-    virtual                             ~GpServiceMainTask  (void) noexcept override;
+    inline                          GpServiceMainTask   (const GpServiceArgBaseDesc& aServiceArgsDesc,
+                                                         const GpServiceCfgBaseDesc& aServiceCfgDesc) noexcept;
+    virtual                         ~GpServiceMainTask  (void) noexcept override;
 
-    const GpServiceArgBaseDesc&         ServiceArgsDesc     (void) const noexcept {return iServiceArgsDesc;}
-
-    template<typename T>
-    const T&                            ServiceArgsDescAs   (void) const;
-
-    const GpServiceCfgBaseDesc&         ServiceCfgDesc      (void) const noexcept {return iServiceCfgDesc;}
+    const GpServiceArgBaseDesc&     ServiceArgsDesc     (void) const noexcept {return iServiceArgsDesc;}
 
     template<typename T>
-    const T&                            ServiceCfgDescAs    (void) const;
+    const T&                        ServiceArgsDescAs   (void) const;
 
-    virtual void                        OnStart             (void) override = 0;
-    virtual GpTaskRunRes::EnumT         OnStep              (void) override = 0;
-    virtual std::optional<GpException>  OnStop              (void) noexcept override = 0;
+    const GpServiceCfgBaseDesc&     ServiceCfgDesc      (void) const noexcept {return iServiceCfgDesc;}
+
+    template<typename T>
+    const T&                        ServiceCfgDescAs    (void) const;
+
+    virtual void                    OnStart             (void) override = 0;
+    virtual GpTaskRunRes::EnumT     OnStep              (void) override = 0;
+    virtual GpException::C::Opt     OnStop              (void) noexcept override = 0;
 
 private:
-    const GpServiceArgBaseDesc&         iServiceArgsDesc;
-    const GpServiceCfgBaseDesc&         iServiceCfgDesc;
+    const GpServiceArgBaseDesc&     iServiceArgsDesc;
+    const GpServiceCfgBaseDesc&     iServiceCfgDesc;
 };
 
 GpServiceMainTask::GpServiceMainTask
@@ -60,4 +60,4 @@ const T&    GpServiceMainTask::ServiceCfgDescAs (void) const
     return serviceCfgDesc;
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

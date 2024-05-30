@@ -1,29 +1,39 @@
+# ----------- Config -----------
 TEMPLATE        = lib
-#CONFIG         += staticlib
-VER_MAJ		    = 2
-VER_MIN		    = 1
-VER_PAT		    = 4
-QMAKE_CXXFLAGS += -DGP_MODULE_UUID=4556d9d1-0c4b-41e1-a6b9-27a518d896dc
+#CONFIG        += staticlib
 QMAKE_CXXFLAGS += -DGP_REFLECTION_STATIC_ADD_TO_MANAGER
+QMAKE_CXXFLAGS += -DGP_MODULE_UUID=4556d9d1-0c4b-41e1-a6b9-27a518d896dc
 PACKET_NAME     = GpService
+DEFINES        += GP_SERVICE_LIBRARY
+_VER_MAJ        = 2
+_VER_MIN        = 1
+_VER_PAT        = 5
 DIR_LEVEL       = ./..
 
-DEFINES		   += GP_SERVICE_LIBRARY
-DEFINES        += "GP_CURRENT_LIB_VER_MAJ=\\\"$$VER_MAJ\\\""
-DEFINES        += "GP_CURRENT_LIB_VER_MIN=\\\"$$VER_MIN\\\""
-DEFINES        += "GP_CURRENT_LIB_VER_PAT=\\\"$$VER_PAT\\\""
-DEFINES        += "GP_CURRENT_LIB_PACKET_NAME=\\\"$$PACKET_NAME\\\""
+include($$DIR_LEVEL/../QtGlobalPro.pri)
 
-include(../../QtGlobalPro.pri)
-
-#------------------------------ LIBS BEGIN ---------------------------------
+# ----------- Libraries -----------
 os_windows{
+	LIBS += -lGpLogCore$$TARGET_POSTFIX
+	LIBS += -lGpJson$$TARGET_POSTFIX
+	LIBS += -lGpTasks$$TARGET_POSTFIX
+	LIBS += -lGpReflection$$TARGET_POSTFIX
+	LIBS += -lGpUtils$$TARGET_POSTFIX
+
+	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_context-vc143-mt-x64-1_84
+	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_context-vc143-mt-gd-x64-1_84
+	QMAKE_LFLAGS += /NODEFAULTLIB:boost_context-vc143-mt-gd-x64-1_84
+	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_program_options-vc143-mt-x64-1_84
+	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_program_options-vc143-mt-gd-x64-1_84
+	QMAKE_LFLAGS += /NODEFAULTLIB:boost_program_options-vc143-mt-gd-x64-1_84
+
+	LIBS += -lboost_program_options-vc143-mt-x64-1_84
 }
 
 os_linux{
 }
-#------------------------------- LIBS END ----------------------------------
 
+# ----------- Sources and headers -----------
 SOURCES += \
 	ArgParser/GpServiceArgBaseDesc.cpp \
 	ArgParser/GpServiceArgBaseDescFactory.cpp \
@@ -32,6 +42,7 @@ SOURCES += \
 	Config/GpServiceCfgBaseDescFactory.cpp \
 	Config/GpServiceCfgTaskManagerDesc.cpp \
 	GpService.cpp \
+	GpServiceLib.cpp \
 	GpServiceMainTask.cpp
 
 HEADERS += \
@@ -42,6 +53,7 @@ HEADERS += \
     Config/GpServiceCfgBaseDescFactory.hpp \
     Config/GpServiceCfgTaskManagerDesc.hpp \
     GpService.hpp \
+    GpServiceLib.hpp \
     GpServiceMainTask.hpp \
     GpServiceMainTaskFactory.hpp \
     GpService_global.hpp

@@ -1,6 +1,7 @@
 #include "GpServiceCfgBaseDesc.hpp"
 
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
 
 namespace GPlatform {
 
@@ -10,10 +11,10 @@ GpServiceCfgBaseDesc::~GpServiceCfgBaseDesc (void) noexcept
 {
 }
 
-void    GpServiceCfgBaseDesc::_SReflectCollectProps (GpReflectProp::C::Vec::Val& aPropsOut)
+void    GpServiceCfgBaseDesc::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
 {
     PROP(log);
     PROP(task_manager);
 }
 
-}//namespace GPlatform
+}// namespace GPlatform

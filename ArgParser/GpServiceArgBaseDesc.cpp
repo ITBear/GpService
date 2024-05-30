@@ -1,6 +1,7 @@
 #include "GpServiceArgBaseDesc.hpp"
 
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
+#include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
 
 namespace GPlatform {
 
@@ -10,10 +11,10 @@ GpServiceArgBaseDesc::~GpServiceArgBaseDesc (void) noexcept
 {
 }
 
-void    GpServiceArgBaseDesc::_SReflectCollectProps (GpReflectProp::C::Vec::Val& aPropsOut)
+void    GpServiceArgBaseDesc::_SReflectCollectProps (GpReflectProp::SmallVecVal& aPropsOut)
 {
     PROP(background);
     PROP(cfg);
 }
 
-}//namespace GPlatform
+}// namespace GPlatform
