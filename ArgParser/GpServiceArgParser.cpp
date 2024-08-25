@@ -1,4 +1,5 @@
 #include "GpServiceArgParser.hpp"
+#include <GpCore2/GpUtils/Types/Strings/GpUTF.hpp>
 
 GP_WARNING_PUSH()
 
@@ -103,36 +104,24 @@ void    GpServiceArgParser::SFillOptions
             } break;
             case GpReflectType::ENUM_FLAGS:
             {
-                if (propContainer == GpReflectContainerType::NO)
-                {
-                    aOptDesc.add_options()
+                THROW_GP
+                (
+                    fmt::format
                     (
-                        std::data(propName),
-                        ""
-                    );
-                } else
-                {
-                    THROW_GP
-                    (
-                        fmt::format
-                        (
-                            "Unsupported container type '{}', property name '{}'",
-                            GpReflectContainerType{propContainer},
-                            propName
-                        )
-                    );
-                }
+                        "Unsupported type '{}', property name '{}'",
+                        GpReflectType{propType},
+                        propName
+                    )
+                );
             } break;
             case GpReflectType::BOOLEAN:
             {
                 if (propContainer == GpReflectContainerType::NO)
                 {
-                    aOptDesc.add_options()(std::data(propName), "");
-
                     aOptDesc.add_options()
                     (
                         std::data(propName),
-                        boost::program_options::value<std::vector<boost::container::string>>()->multitoken(),
+                        boost::program_options::bool_switch()->default_value(false),
                         ""
                     );
                 } else

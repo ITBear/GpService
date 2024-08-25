@@ -1,5 +1,4 @@
-#include "GpServiceCfgBaseDesc.hpp"
-
+#include <GpService/Config/GpServiceCfgBaseDesc.hpp>
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
 #include <GpCore2/GpReflection/GpReflectPropUtils.hpp>
 

@@ -1,16 +1,19 @@
 # ----------- Config -----------
 TEMPLATE        = lib
-#CONFIG        += staticlib
 QMAKE_CXXFLAGS += -DGP_REFLECTION_STATIC_ADD_TO_MANAGER
 QMAKE_CXXFLAGS += -DGP_MODULE_UUID=4556d9d1-0c4b-41e1-a6b9-27a518d896dc
 PACKET_NAME     = GpService
 DEFINES        += GP_SERVICE_LIBRARY
 _VER_MAJ        = 2
 _VER_MIN        = 1
-_VER_PAT        = 5
+_VER_PAT        = 6
 DIR_LEVEL       = ./..
 
 include($$DIR_LEVEL/../QtGlobalPro.pri)
+
+release_build_static{
+	CONFIG += staticlib
+}
 
 # ----------- Libraries -----------
 os_windows{

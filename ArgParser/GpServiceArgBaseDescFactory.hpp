@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GpServiceArgBaseDesc.hpp"
+#include <GpService/ArgParser/GpServiceArgBaseDesc.hpp>
 
 namespace GPlatform {
 

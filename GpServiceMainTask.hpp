@@ -1,7 +1,7 @@
 #pragma once
 
-#include "ArgParser/GpServiceArgBaseDesc.hpp"
-#include "Config/GpServiceCfgBaseDesc.hpp"
+#include <GpService/ArgParser/GpServiceArgBaseDesc.hpp>
+#include <GpService/Config/GpServiceCfgBaseDesc.hpp>
 #include <GpCore2/GpReflection/GpReflectManager.hpp>
 #include <GpCore2/GpTasks/Fibers/GpTaskFiber.hpp>
 
@@ -28,9 +28,10 @@ protected:
     template<typename T>
     const T&                        ServiceCfgDescAs    (void) const;
 
-    virtual void                    OnStart             (void) override = 0;
+    virtual void                    OnStart             (void) override;
     virtual GpTaskRunRes::EnumT     OnStep              (void) override = 0;
-    virtual GpException::C::Opt     OnStop              (void) noexcept override = 0;
+    virtual void                    OnStop              (StopExceptionsT& aStopExceptionsOut) noexcept override;
+    virtual void                    OnStopException     (const GpException& aException) noexcept override = 0;
 
 private:
     const GpServiceArgBaseDesc&     iServiceArgsDesc;
@@ -42,8 +43,8 @@ GpServiceMainTask::GpServiceMainTask
     const GpServiceArgBaseDesc& aServiceArgsDesc,
     const GpServiceCfgBaseDesc& aServiceCfgDesc
 ) noexcept:
-iServiceArgsDesc(aServiceArgsDesc),
-iServiceCfgDesc (std::move(aServiceCfgDesc))
+iServiceArgsDesc{aServiceArgsDesc},
+iServiceCfgDesc {std::move(aServiceCfgDesc)}
 {
 }
 

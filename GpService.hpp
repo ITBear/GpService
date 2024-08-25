@@ -1,9 +1,9 @@
 #pragma once
 
-#include "GpServiceMainTaskFactory.hpp"
-#include "Config/GpServiceCfgBaseDescFactory.hpp"
-#include "ArgParser/GpServiceArgBaseDescFactory.hpp"
-
+#include <GpService/GpServiceMainTaskFactory.hpp>
+#include <GpService/GpServiceMainTaskFactory.hpp>
+#include <GpService/Config/GpServiceCfgBaseDescFactory.hpp>
+#include <GpService/ArgParser/GpServiceArgBaseDescFactory.hpp>
 #include <GpCore2/GpUtils/SyncPrimitives/GpConditionVarFlag.hpp>
 #include <GpLog/GpLogCore/Consumers/GpLogConsumersFactory.hpp>
 
@@ -26,55 +26,56 @@ public:
     using ServiceArgOptCRefT = GpServiceArgBaseDesc::C::Opt::CRef;
 
 public:
-    inline                              GpService               (std::string aName);
-                                        ~GpService              (void) noexcept;
+                                GpService                   (std::string aName);
+                                ~GpService                  (void) noexcept;
 
-    [[nodiscard]] static int            SStartAndWaitForStop    (std::string                        aName,
-                                                                 const size_t                       aArgc,
-                                                                 char**                             aArgv,
-                                                                 GpLogConsumersFactory::SP          aLogConsumersFactory,
-                                                                 GpServiceCfgBaseDescFactory::SP    aCfgBaseDescFactory,
-                                                                 GpServiceArgBaseDescFactory::SP    aArgBaseDescFactory,
-                                                                 GpServiceMainTaskFactory::SP       aServiceMainTaskFactory);
-    [[nodiscard]] static int            SStartAndWaitForStop    (std::string                        aName,
-                                                                 GpServiceMainTaskFactory::SP       aServiceMainTaskFactory);
+    [[nodiscard]] static int    SStartAndWaitForStop        (std::string                        aName,
+                                                             size_t                             aArgc,
+                                                             char**                             aArgv,
+                                                             GpLogConsumersFactory::SP          aLogConsumersFactory,
+                                                             GpLogLevel::EnumT                  aDefaultLogLevel,
+                                                             GpServiceCfgBaseDescFactory::SP    aCfgBaseDescFactory,
+                                                             GpServiceArgBaseDescFactory::SP    aArgBaseDescFactory,
+                                                             GpServiceMainTaskFactory::SP       aServiceMainTaskFactory);
+    [[nodiscard]] static int    SStartAndWaitForStop        (std::string                        aName,
+                                                             GpServiceMainTaskFactory::SP       aServiceMainTaskFactory);
 
-    static void                         SRequestStop            (void) noexcept;
-    static ServiceArgOptCRefT           SArgs                   (void);
+    static void                 SRequestStop                (void) noexcept;
+    static ServiceArgOptCRefT   SArgs                       (void);
 
 protected:
-    static void                         SInterruptWaitForStop   (void) noexcept;
-    static void                         SSystemSignalsHandler   (int aSignalId) noexcept;
+    static void                 SInterruptWaitForStop       (void) noexcept;
+    static void                 SSystemSignalsHandler       (int aSignalId) noexcept;
 
 private:
-    int                                 Start                   (const size_t                       aArgc,
-                                                                 char**                             aArgv,
-                                                                 GpLogConsumersFactory::SP          aLogConsumersFactory,
-                                                                 GpServiceCfgBaseDescFactory::SP    aCfgBaseDescFactory,
-                                                                 GpServiceArgBaseDescFactory::SP    aArgBaseDescFactory,
-                                                                 GpServiceMainTaskFactory::SP       aServiceMainTaskFactory) noexcept;
-    int                                 Stop                    (void) noexcept;
-    void                                ParseServiceArgs        (const size_t                       aArgc,
-                                                                 char**                             aArgv,
-                                                                 GpServiceArgBaseDescFactory::SP    aArgBaseDescFactory);
-    void                                ReadConfig              (GpServiceCfgBaseDescFactory::SP    aCfgBaseDescFactory);
-    void                                SetSystemSignalsHandler (void);
-    void                                StartLog                (GpLogConsumersFactory::SP          aConsumersFactory);
-    void                                StartFibers             (void);
-    void                                StopFibers              (void);
-    void                                StartTaskScheduler      (void);
-    void                                StopTaskScheduler       (void);
-    void                                StartMainTask           (GpServiceMainTaskFactory::SP       aServiceMainTaskFactory);
-    void                                CheckMainTaskDoneResult (void);
+    int                         Start                       (size_t                             aArgc,
+                                                             char**                             aArgv,
+                                                             GpLogConsumersFactory::SP          aLogConsumersFactory,
+                                                             GpServiceCfgBaseDescFactory::SP    aCfgBaseDescFactory,
+                                                             GpServiceArgBaseDescFactory::SP    aArgBaseDescFactory,
+                                                             GpServiceMainTaskFactory::SP       aServiceMainTaskFactory) noexcept;
+    int                         Stop                        (void) noexcept;
+    void                        ParseServiceArgs            (size_t                             aArgc,
+                                                             char**                             aArgv,
+                                                             GpServiceArgBaseDescFactory::SP    aArgBaseDescFactory);
+    void                        ReadConfig                  (GpServiceCfgBaseDescFactory::SP    aCfgBaseDescFactory);
+    void                        SetSystemSignalsHandler     (void);
+    void                        StartLog                    (GpLogConsumersFactory::SP          aConsumersFactory);
+    void                        StartFibers                 (void);
+    void                        StopFibers                  (void);
+    void                        StartTaskScheduler          (void);
+    void                        StopTaskScheduler           (void);
+    void                        StartMainTask               (GpServiceMainTaskFactory::SP       aServiceMainTaskFactory);
+    void                        CheckMainTaskDoneResult     (void);
 
 private:
-    const std::string                   iName;
-    GpServiceArgBaseDesc::SP            iArgsDesc;
-    GpServiceCfgBaseDesc::SP            iCfgDesc;
+    const std::string           iName;
+    GpServiceArgBaseDesc::SP    iArgsDesc;
+    GpServiceCfgBaseDesc::SP    iCfgDesc;
 
-    GpServiceMainTask::SP               iMainTaskSP;
-    GpTask::StartFutureT::SP            iMainTaskStartFuture;
-    GpTask::DoneFutureT::SP             iMainTaskDoneFuture;
+    GpServiceMainTask::SP       iMainTaskSP;
+    GpTask::StartFutureT::SP    iMainTaskStartFuture;
+    GpTask::DoneFutureT::SP     iMainTaskDoneFuture;
 
     static GpService::SP                sService;
     static std::mutex                   sServiceMutex;
@@ -82,10 +83,5 @@ private:
     static std::atomic_flag             sIsStopRequested;
     static volatile std::sig_atomic_t   sSignalReceived;
 };
-
-GpService::GpService (std::string aName):
-iName(std::move(aName))
-{
-}
 
 }// namespace GPlatform
