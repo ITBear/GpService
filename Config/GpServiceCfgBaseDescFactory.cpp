@@ -1,4 +1,4 @@
-#include "GpServiceCfgBaseDescFactory.hpp"
+#include <GpService/Config/GpServiceCfgBaseDescFactory.hpp>
 
 namespace GPlatform {
 

@@ -11,29 +11,33 @@ DIR_LEVEL       = ./..
 
 include($$DIR_LEVEL/../QtGlobalPro.pri)
 
-release_build_static{
+equals(var_link, "static") {
 	CONFIG += staticlib
 }
 
 # ----------- Libraries -----------
-os_windows{
+equals(var_os, "windows") {
 	LIBS += -lGpLogCore$$TARGET_POSTFIX
 	LIBS += -lGpJson$$TARGET_POSTFIX
 	LIBS += -lGpTasks$$TARGET_POSTFIX
 	LIBS += -lGpReflection$$TARGET_POSTFIX
 	LIBS += -lGpUtils$$TARGET_POSTFIX
 
-	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_context-vc143-mt-x64-1_84
-	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_context-vc143-mt-gd-x64-1_84
-	QMAKE_LFLAGS += /NODEFAULTLIB:boost_context-vc143-mt-gd-x64-1_84
-	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_program_options-vc143-mt-x64-1_84
-	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_program_options-vc143-mt-gd-x64-1_84
-	QMAKE_LFLAGS += /NODEFAULTLIB:boost_program_options-vc143-mt-gd-x64-1_84
-
-	LIBS += -lboost_program_options-vc143-mt-x64-1_84
+	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_context-vc143-mt-x64-1_86
+	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_context-vc143-mt-gd-x64-1_86
+	QMAKE_LFLAGS += /NODEFAULTLIB:boost_context-vc143-mt-gd-x64-1_86
+	LIBS += -lboost_context-vc143-mt-x64-1_86
 }
 
-os_linux{
+equals(var_os, "linux") {
+	LIBS += -lGpLogCore$$TARGET_POSTFIX
+	LIBS += -lGpJson$$TARGET_POSTFIX
+	LIBS += -lGpTasks$$TARGET_POSTFIX
+	LIBS += -lGpReflection$$TARGET_POSTFIX
+	LIBS += -lGpUtils$$TARGET_POSTFIX
+
+	LIBS += -lboost_context
+	LIBS += -lfmt
 }
 
 # ----------- Sources and headers -----------

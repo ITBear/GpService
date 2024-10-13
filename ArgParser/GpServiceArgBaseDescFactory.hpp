@@ -9,12 +9,14 @@ class GP_SERVICE_API GpServiceArgBaseDescFactory
 public:
     CLASS_DD(GpServiceArgBaseDescFactory)
 
-public:
-                                        GpServiceArgBaseDescFactory     (void) noexcept = default;
-    virtual                             ~GpServiceArgBaseDescFactory    (void) noexcept = default;
+    using ResT = std::tuple<GpServiceArgBaseDesc::SP, bool/*isEnableUnknownArguments*/>;
 
-    virtual GpServiceArgBaseDesc::SP    NewInstance                     (const size_t   aArgc,
-                                                                         char**         aArgv) const;
+public:
+                        GpServiceArgBaseDescFactory     (void) noexcept = default;
+    virtual             ~GpServiceArgBaseDescFactory    (void) noexcept = default;
+
+    virtual ResT        NewInstance                     (size_t             aArgc,
+                                                         const char* const  aArgv[]) const;
 };
 
 }// namespace GPlatform

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../GpService_global.hpp"
+#include <GpService/GpService_global.hpp>
 
 #include <GpCore2/GpReflection/GpReflectObject.hpp>
 #include <GpCore2/GpReflection/GpReflectUtils.hpp>

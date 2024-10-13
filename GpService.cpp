@@ -45,7 +45,7 @@ int GpService::SStartAndWaitForStop
 (
     std::string                     aName,
     const size_t                    aArgc,
-    char**                          aArgv,
+    const char* const               aArgv[],
     GpLogConsumersFactory::SP       aLogConsumersFactory,
     const GpLogLevel::EnumT         aDefaultLogLevel,
     GpServiceCfgBaseDescFactory::SP aCfgBaseDescFactory,
@@ -143,35 +143,13 @@ int GpService::SStartAndWaitForStop
             while (!done)
             {
                 // Check if stop requested
-                if (sIsStopRequested.test()) [[unlikely]]
-                {
-                    //GpStringUtils::SCout("[GpService::SStartAndWaitForStop]: sIsStopRequested.test() == true");
-
-                    done = true;
-                }
+                done |= sIsStopRequested.test();
 
                 // Check if main task done
-                if (mainTaskDoneFuture.IsReady()) [[unlikely]]
-                {
-                    //GpStringUtils::SCout("[GpService::SStartAndWaitForStop]: mainTaskDoneFuture.IsReady() == true");
-
-                    done = true;
-                }
+                done |= mainTaskDoneFuture.IsReady();
 
                 // Check OS signal
-                if (GpService::sSignalReceived != 0)
-                {
-                    //GpStringUtils::SCout
-                    //(
-                    //  fmt::format
-                    //  (
-                    //      "[GpService::SStartAndWaitForStop]: OS signal received: {}",
-                    //      int(GpService::sSignalReceived)
-                    //  )
-                    //);
-
-                    done = true;
-                }
+                done |= GpService::sSignalReceived != 0;
 
                 // Check timeout
                 //{
@@ -273,6 +251,11 @@ GpServiceArgBaseDesc::C::Opt::CRef  GpService::SArgs (void)
     return r.V();
 }
 
+GpArgParserRes::CSP GpService::SArgsParseRes (void)
+{
+    return GpService::sService.V().iArgsParseRes;
+}
+
 void    GpService::SInterruptWaitForStop (void) noexcept
 {
     //GpStringUtils::SCout("[GpService::SInterruptWaitForStop]: begin");
@@ -329,7 +312,7 @@ void    GpService::SSystemSignalsHandler (int aSignalId) noexcept
 int GpService::Start
 (
     const size_t                    aArgc,
-    char**                          aArgv,
+    const char* const               aArgv[],
     GpLogConsumersFactory::SP       aLogConsumersFactory,
     GpServiceCfgBaseDescFactory::SP aCfgBaseDescFactory,
     GpServiceArgBaseDescFactory::SP aArgBaseDescFactory,
@@ -467,16 +450,15 @@ int GpService::Stop (void) noexcept
 void    GpService::ParseServiceArgs
 (
     const size_t                    aArgc,
-    char**                          aArgv,
+    const char* const               aArgv[],
     GpServiceArgBaseDescFactory::SP aArgBaseDescFactory
 )
 {
-    iArgsDesc = GpServiceArgParser::SParse
+    std::tie(iArgsDesc, iArgsParseRes) = GpServiceArgParser::SParse
     (
         aArgc,
         aArgv,
-        aArgBaseDescFactory.V(),
-        "Service command line arguments"_sv
+        aArgBaseDescFactory.V()
     );
 }
 
@@ -608,7 +590,7 @@ void    GpService::StartTaskScheduler (void)
 
     GpTaskScheduler::SStart
     (
-        GpTaskSchedulerV1Factory(),
+        GpTaskSchedulerV1Factory{},
         taskManagerCfg.executors_cnt,
         taskManagerCfg.tasks_max_cnt,
         []()
@@ -627,8 +609,21 @@ void    GpService::StopTaskScheduler (void)
         // Send stop to main task
         iMainTaskSP->RequestTaskStop();
 
-        // Wait for stop
-        CheckMainTaskDoneResult();
+        // Wait for main task done
+        GpItcSharedFutureUtils::SWaitForInf
+        (
+            iMainTaskDoneFuture.Vn(),
+            [&](typename GpTaskFiber::DoneFutureT::value_type&)// OnSuccessFnT
+            {
+                // NOP
+            },
+            [](const GpException&)// OnExceptionFnT
+            {
+                // NOP
+                // LOG_EXCEPTION("Main task", aEx);
+            },
+            100.0_si_ms
+        );
     }
 
     GpTaskScheduler::SStopAndClear();
@@ -659,29 +654,6 @@ void    GpService::StartMainTask (GpServiceMainTaskFactory::SP aServiceMainTaskF
             // NOP
         },
         [](const GpException& aEx)//OnExceptionFnT
-        {
-            throw aEx;
-        },
-        100.0_si_ms
-    );
-}
-
-void    GpService::CheckMainTaskDoneResult (void)
-{
-    if (iMainTaskDoneFuture.IsNULL())
-    {
-        return;
-    }
-
-    // Wait for main task done
-    GpItcSharedFutureUtils::SWaitForInf
-    (
-        iMainTaskDoneFuture.Vn(),
-        [&](typename GpTaskFiber::DoneFutureT::value_type&)// OnSuccessFnT
-        {
-            // NOP
-        },
-        [](const GpException& aEx)// OnExceptionFnT
         {
             throw aEx;
         },

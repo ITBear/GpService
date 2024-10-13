@@ -14,7 +14,7 @@ public:
     CLASS_DD(GpServiceMainTask)
 
 protected:
-    inline                          GpServiceMainTask   (const GpServiceArgBaseDesc& aServiceArgsDesc,
+                                    GpServiceMainTask   (const GpServiceArgBaseDesc& aServiceArgsDesc,
                                                          const GpServiceCfgBaseDesc& aServiceCfgDesc) noexcept;
     virtual                         ~GpServiceMainTask  (void) noexcept override;
 
@@ -37,16 +37,6 @@ private:
     const GpServiceArgBaseDesc&     iServiceArgsDesc;
     const GpServiceCfgBaseDesc&     iServiceCfgDesc;
 };
-
-GpServiceMainTask::GpServiceMainTask
-(
-    const GpServiceArgBaseDesc& aServiceArgsDesc,
-    const GpServiceCfgBaseDesc& aServiceCfgDesc
-) noexcept:
-iServiceArgsDesc{aServiceArgsDesc},
-iServiceCfgDesc {std::move(aServiceCfgDesc)}
-{
-}
 
 template<typename T>
 const T&    GpServiceMainTask::ServiceArgsDescAs (void) const

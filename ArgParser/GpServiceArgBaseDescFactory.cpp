@@ -2,13 +2,13 @@
 
 namespace GPlatform {
 
-GpServiceArgBaseDesc::SP    GpServiceArgBaseDescFactory::NewInstance
+GpServiceArgBaseDescFactory::ResT   GpServiceArgBaseDescFactory::NewInstance
 (
-    const size_t    /*aArgc*/,
-    char**          /*aArgv*/
+    [[maybe_unused]] const size_t       aArgc,
+    [[maybe_unused]] const char* const  aArgv[]
 ) const
 {
-    return MakeSP<GpServiceArgBaseDesc>();
+    return {MakeSP<GpServiceArgBaseDesc>(), false};
 }
 
 }// namespace GPlatform

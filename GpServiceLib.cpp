@@ -1,7 +1,7 @@
-#include "GpServiceLib.hpp"
+#include <GpService/GpServiceLib.hpp>
 
 namespace GPlatform {
 
-GP_IMPLEMENT_LIB(GpServiceLib)
+GP_IMPLEMENT_LIB_REGISTRATOR(GpServiceLib)
 
 }// namespace GPlatform
