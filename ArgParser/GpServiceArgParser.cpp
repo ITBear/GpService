@@ -118,7 +118,7 @@ GpArgParserRes::SP  GpServiceArgParser::SParse
 
                 if (arg.DefaultValue().empty())
                 {
-                    THROW_GP
+                    THROW
                     (
                         fmt::format
                         (
@@ -129,7 +129,7 @@ GpArgParserRes::SP  GpServiceArgParser::SParse
                 }
             } else if (argValuesCount > 1)
             {
-                THROW_GP
+                THROW
                 (
                     fmt::format
                     (
@@ -213,7 +213,7 @@ GpArgParserRes::SP  GpServiceArgParser::SParse
                         propRef = false;
                     } else
                     {
-                        THROW_GP
+                        THROW
                         (
                             fmt::format
                             (
@@ -230,7 +230,7 @@ GpArgParserRes::SP  GpServiceArgParser::SParse
                 case GpReflectType::NOT_SET:    [[fallthrough]];
                 default:
                 {
-                    THROW_GP
+                    THROW
                     (
                         fmt::format
                         (
@@ -383,7 +383,7 @@ GpArgParserRes::SP  GpServiceArgParser::SParse
                 case GpReflectType::NOT_SET:    [[fallthrough]];
                 default:
                 {
-                    THROW_GP
+                    THROW
                     (
                         fmt::format
                         (
@@ -396,7 +396,7 @@ GpArgParserRes::SP  GpServiceArgParser::SParse
             }
         } else
         {
-            THROW_GP
+            THROW
             (
                 fmt::format
                 (

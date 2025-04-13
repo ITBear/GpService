@@ -30,7 +30,7 @@ protected:
 
     virtual void                    OnStart             (void) override;
     virtual GpTaskRunRes::EnumT     OnStep              (void) override = 0;
-    virtual void                    OnStop              (StopExceptionsT& aStopExceptionsOut) noexcept override;
+    virtual void                    OnStop              (ExceptionsT& aStopExceptionsOut) noexcept override;
     virtual void                    OnStopException     (const GpException& aException) noexcept override = 0;
 
 private:

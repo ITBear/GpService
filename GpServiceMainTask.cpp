@@ -22,7 +22,7 @@ void    GpServiceMainTask::OnStart (void)
     // NOP
 }
 
-void    GpServiceMainTask::OnStop ([[maybe_unused]] StopExceptionsT& aStopExceptionsOut) noexcept
+void    GpServiceMainTask::OnStop ([[maybe_unused]] ExceptionsT& aStopExceptionsOut) noexcept
 {
     GpService::SRequestStop();
 }

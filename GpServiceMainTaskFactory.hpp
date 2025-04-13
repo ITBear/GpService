@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GpServiceMainTask.hpp"
+#include <GpService/GpServiceMainTask.hpp>
 
 namespace GPlatform {
 

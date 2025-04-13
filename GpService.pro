@@ -17,11 +17,11 @@ equals(var_link, "static") {
 
 # ----------- Libraries -----------
 equals(var_os, "windows") {
-	LIBS += -lGpLogCore$$TARGET_POSTFIX
-	LIBS += -lGpJson$$TARGET_POSTFIX
-	LIBS += -lGpTasks$$TARGET_POSTFIX
-	LIBS += -lGpReflection$$TARGET_POSTFIX
-	LIBS += -lGpUtils$$TARGET_POSTFIX
+	LIBS += -lGpLogCore$$TARGET_POSTFIX$$_VER_MAJ
+	LIBS += -lGpJson$$TARGET_POSTFIX$$_VER_MAJ
+	LIBS += -lGpTasks$$TARGET_POSTFIX$$_VER_MAJ
+	LIBS += -lGpReflection$$TARGET_POSTFIX$$_VER_MAJ
+	LIBS += -lGpUtils$$TARGET_POSTFIX$$_VER_MAJ
 
 	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_context-vc143-mt-x64-1_86
 	QMAKE_LFLAGS += /NODEFAULTLIB:libboost_context-vc143-mt-gd-x64-1_86

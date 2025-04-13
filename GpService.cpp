@@ -5,7 +5,7 @@
 #include <GpCore2/GpTasks/Fibers/Boost/GpTaskFiberCtxFactoryBoost.hpp>
 #include <GpCore2/GpTasks/Scheduler/GpTaskScheduler.hpp>
 #include <GpCore2/GpTasks/Scheduler/V1/GpTaskSchedulerV1Factory.hpp>
-#include <GpCore2/GpTasks/ITC/GpItcSharedFutureUtils.hpp>
+#include <GpCore2/GpTasks/ITC/GpItcFutureUtils.hpp>
 #include <GpCore2/GpUtils/Files/GpFileUtils.hpp>
 #include <GpCore2/GpUtils/Other/GpRAIIonDestruct.hpp>
 #include <GpCore2/GpUtils/Random/GpSRandom.hpp>
@@ -26,11 +26,12 @@
 
 namespace GPlatform {
 
-GpService::SP               GpService::sService;
+GpService::SP               GpService::sServiceSP;
 std::mutex                  GpService::sServiceMutex;
 GpConditionVarFlag          GpService::sServiceCondVar;
 std::atomic_flag            GpService::sIsStopRequested;
 volatile std::sig_atomic_t  GpService::sSignalReceived  = 0;
+std::atomic<int>            GpService::sResultCode      = EXIT_SUCCESS;
 
 GpService::GpService (std::string aName):
 iName{std::move(aName)}
@@ -43,7 +44,7 @@ GpService::~GpService (void) noexcept
 
 int GpService::SStartAndWaitForStop
 (
-    std::string                     aName,
+    const std::string               aName,
     const size_t                    aArgc,
     const char* const               aArgv[],
     GpLogConsumersFactory::SP       aLogConsumersFactory,
@@ -53,39 +54,40 @@ int GpService::SStartAndWaitForStop
     GpServiceMainTaskFactory::SP    aServiceMainTaskFactory
 )
 {
+#if defined(GP_OS_WINDOWS)
+    SetConsoleOutputCP(CP_UTF8);
+#endif// #if defined(GP_OS_WINDOWS)
+
     GpLog::SSetLevel(aDefaultLogLevel);
     GpThread::SSetSysNameForCurrent("Main");
 
     int exitCode = EXIT_FAILURE;
 
-    GpRAIIonDestruct onStop
-    (
-        [aName]()
-        {
-            const milliseconds_t appStopSteadyTS    = GpDateTimeOps::SSteadyTS_ms();
-            const milliseconds_t appRunTime         = appStopSteadyTS - GpDateTimeOps::SSteadyTS_ms_AtAppStart();
+    GpRAIIonDestruct onStop = [&aName]()
+    {
+        const milliseconds_t appStopSteadyTS    = GpDateTimeOps::SSteadyTS_ms();
+        const milliseconds_t appRunTime         = appStopSteadyTS - GpDateTimeOps::SSteadyTS_ms_AtAppStart();
 
-            LOG_INFO
+        LOG_INFO
+        (
+            fmt::format
             (
-                fmt::format
-                (
-                    ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STOP application: \"{}\" <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" \
-                    "\nTotal run time: {}",
-                    aName,
-                    GpDateTimeOps::SToDaysHoursMinSec(appRunTime)
-                )
-            );
+                ">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> STOP application: \"{}\" <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" \
+                "\nTotal run time: {}",
+                aName,
+                GpDateTimeOps::SToDaysHoursMinSec(appRunTime)
+            )
+        );
 
-            GpLog::S().Stop();
-            GpLog::SClear();
+        GpLog::S().Stop();
+        GpLog::SClear();
 
-            std::cout << "\n";
+        std::cout << "\n";
 
-            std::cout.flush();
-            std::clog.flush();
-            std::cerr.flush();
-        }
-    );
+        std::cout.flush();
+        std::clog.flush();
+        std::cerr.flush();
+    };
 
     try
     {
@@ -110,15 +112,15 @@ int GpService::SStartAndWaitForStop
         {
             std::scoped_lock lock(GpService::sServiceMutex);
 
-            THROW_COND_GP
+            VERIFY
             (
-                GpService::sService.IsNULL(),
+                GpService::sServiceSP.IsNULL(),
                 "GpService::SStart already called"_sv
             );
 
-            GpService::sService = MakeSP<GpService>(aName);
+            GpService::sServiceSP = MakeSP<GpService>(aName);
 
-            startCode = GpService::sService.Vn().Start
+            startCode = GpService::sServiceSP.Vn().Start
             (
                 NumOps::SConvert<size_t>(aArgc),
                 aArgv,
@@ -135,7 +137,7 @@ int GpService::SStartAndWaitForStop
         {
             //const auto beginSTS = GpDateTimeOps::SSteadyTS_ms();
 
-            GpTask::DoneFutureT& mainTaskDoneFuture = GpService::sService->iMainTaskDoneFuture.V();
+            GpTask::DoneFutureT& mainTaskDoneFuture = GpService::sServiceSP.Vn().iMainTaskDoneFuture.V();
 
             // --- Wait for stop signal or for main task done ---
             bool done = false;
@@ -146,7 +148,24 @@ int GpService::SStartAndWaitForStop
                 done |= sIsStopRequested.test();
 
                 // Check if main task done
-                done |= mainTaskDoneFuture.IsReady();
+                if (mainTaskDoneFuture.IsReady())
+                {
+                    done = true;
+
+                    std::ignore = GpItcFutureUtils::STryCheck
+                    (
+                        mainTaskDoneFuture,
+                        []([[maybe_unused]] auto& aRes)
+                        {
+                            // NOP
+                        },
+                        [&exitCode](const GpException& aEx)
+                        {
+                            LOG_EXCEPTION("[GpService::SStartAndWaitForStop]", aEx);
+                            exitCode = EXIT_FAILURE;
+                        }
+                    );
+                }
 
                 // Check OS signal
                 done |= GpService::sSignalReceived != 0;
@@ -173,10 +192,10 @@ int GpService::SStartAndWaitForStop
         {
             std::scoped_lock lock(GpService::sServiceMutex);
 
-            if (GpService::sService.IsNotNULL())
+            if (GpService::sServiceSP.IsNotNULL())
             {
-                const int stopExitCode = GpService::sService.V().Stop();
-                GpService::sService.Clear();
+                const int stopExitCode = GpService::sServiceSP.Vn().Stop();
+                GpService::sServiceSP.Clear();
 
                 if (stopExitCode == EXIT_FAILURE)
                 {
@@ -239,9 +258,9 @@ void    GpService::SRequestStop (void) noexcept
     sIsStopRequested.test_and_set();
 }
 
-GpServiceArgBaseDesc::C::Opt::CRef  GpService::SArgs (void)
+GpServiceArgBaseDesc::C::Opts::CRef GpService::SArgs (void)
 {
-    const auto& r = GpService::sService.V().iArgsDesc;
+    const auto& r = GpService::sServiceSP.Vn().iArgsDesc;
 
     if (r.IsNULL())
     {
@@ -253,18 +272,29 @@ GpServiceArgBaseDesc::C::Opt::CRef  GpService::SArgs (void)
 
 GpArgParserRes::CSP GpService::SArgsParseRes (void)
 {
-    return GpService::sService.V().iArgsParseRes;
+    return GpService::sServiceSP.Vn().iArgsParseRes;
+}
+
+void    GpService::SSetResultCode (const int aCode)
+{
+    GpService::sResultCode = aCode;
+}
+
+std::string_view    GpService::SApplicationName (void) noexcept
+{
+    return GpService::sServiceSP.Vn().Name();
 }
 
 void    GpService::SInterruptWaitForStop (void) noexcept
 {
-    //GpStringUtils::SCout("[GpService::SInterruptWaitForStop]: begin");
     GpService::sServiceCondVar.NotifyAll();
-    //GpStringUtils::SCout("[GpService::SInterruptWaitForStop]: end");
 }
 
 void    GpService::SSystemSignalsHandler (int aSignalId) noexcept
 {
+    std::cout << "[GpService::SSystemSignalsHandler]: !!!!!!!!!!!!!!!" << std::endl;
+    std::cout.flush();
+
     switch (aSignalId)
     {
 #if defined(GP_POSIX)
@@ -308,6 +338,25 @@ void    GpService::SSystemSignalsHandler (int aSignalId) noexcept
         }
     }
 }
+
+#if defined(GP_OS_WINDOWS)
+BOOL WINAPI GpService::SWinConsoleHandler (DWORD aSignalId) noexcept
+{
+    std::cout << "[GpService::SWinConsoleHandler]: !!!!!!!!!!!!!!!" << std::endl;
+    std::cout.flush();
+
+    GpStackTrace::SPrintStacktrace
+    (
+        fmt::format
+        (
+            "[GpService::SWinConsoleHandler]: signal id = {}. ",
+            aSignalId
+        )
+    );
+
+    std::exit(EXIT_FAILURE);
+}
+#endif// #if defined(GP_OS_WINDOWS)
 
 int GpService::Start
 (
@@ -378,29 +427,20 @@ int GpService::Start
 
 int GpService::Stop (void) noexcept
 {
-    int stopCode = EXIT_SUCCESS;
+    int stopCode = GpService::sResultCode;
 
     try
     {
-        //GpStringUtils::SCout("[GpService::Stop]: stop...");
-
 #if defined(GP_USE_TIMERS)
-        //GpStringUtils::SCout("[GpService::Stop]: GpTimersManager::SDisableShots()...");
         GpTimersManager::SDisableShots();
 #endif
 
-        //GpStringUtils::SCout("[GpService::Stop]: StopTaskScheduler()...");
         StopTaskScheduler();
-
-        //GpStringUtils::SCout("[GpService::Stop]: StopFibers()...");
         StopFibers();
 
 #if defined(GP_USE_TIMERS)
-        //GpStringUtils::SCout("[GpService::Stop]: GpTimersManager::SStop()...");
         GpTimersManager::SStop();
 #endif
-
-        //GpStringUtils::SCout("[GpService::Stop]: done...");
     } catch (const GpException& ex)
     {
         LOG_EXCEPTION("[GpService::Stop]", ex);
@@ -433,15 +473,15 @@ int GpService::Stop (void) noexcept
             return ForkResT::CHILD;
         }
 
-        THROW_COND_GP(pid > 0, "Fork failed (stage 2)"_sv);
+        VERIFY(pid > 0, "Fork failed (stage 2)"_sv);
     } else if (pid > 0)//ForkResT::PARENT
     {
         return ForkResT::PARENT;
     }
 
-    THROW_GP("Fork failed (stage 1)"_sv);
+    THROW("Fork failed (stage 1)"_sv);
 #else
-    THROW_GP("fork() not supported on current platform..."_sv);
+    THROW("fork() not supported on current platform..."_sv);
 #endif// #if defined(GP_POSIX)
 
     return ForkResT::CHILD;
@@ -501,6 +541,8 @@ void    GpService::SetSystemSignalsHandler (void)
     sigaction(SIGPIPE,  &sa, nullptr);
 
 #elif defined(GP_OS_WINDOWS)
+    SetConsoleCtrlHandler(SWinConsoleHandler, TRUE);
+
     signal(SIGTERM, SSystemSignalsHandler);
     signal(SIGINT,  SSystemSignalsHandler);
     signal(SIGABRT, SSystemSignalsHandler);
@@ -607,22 +649,20 @@ void    GpService::StopTaskScheduler (void)
         //GpStringUtils::SCout("[GpService::Stop]: Send stop to main task...");
 
         // Send stop to main task
-        iMainTaskSP->RequestTaskStop();
+        std::ignore = iMainTaskSP->RequestStop();
 
         // Wait for main task done
-        GpItcSharedFutureUtils::SWaitForInf
+        GpItcFutureUtils::SWait
         (
             iMainTaskDoneFuture.Vn(),
             [&](typename GpTaskFiber::DoneFutureT::value_type&)// OnSuccessFnT
             {
-                // NOP
+                // NOP              
             },
-            [](const GpException&)// OnExceptionFnT
+            [](const GpException& aEx)// OnExceptionFnT
             {
-                // NOP
-                // LOG_EXCEPTION("Main task", aEx);
-            },
-            100.0_si_ms
+                LOG_EXCEPTION("Main task", aEx);
+            }
         );
     }
 
@@ -639,26 +679,34 @@ void    GpService::StartMainTask (GpServiceMainTaskFactory::SP aServiceMainTaskF
     );
 
     // Get futures
-    iMainTaskStartFuture    = iMainTaskSP->GetStartFuture();
-    iMainTaskDoneFuture     = iMainTaskSP->GetDoneFuture();
+    iMainTaskStartFuture    = iMainTaskSP->StartFuture();
+    iMainTaskDoneFuture     = iMainTaskSP->DoneFuture();
 
     // Start task
-    GpTaskScheduler::S().NewToReady(iMainTaskSP);
+    VERIFY
+    (
+        GpTaskScheduler::S().NewToReady(iMainTaskSP) == true,
+        "Failed to start MainTask"
+    );
 
     // Wait for start
-    GpItcSharedFutureUtils::SWaitForInf
+    GpItcFutureUtils::SWait
     (
         iMainTaskStartFuture.V(),
-        [&](typename GpTaskFiber::StartFutureT::value_type&)//OnSuccessFnT
+        [&](typename GpTaskFiber::StartFutureT::value_type&)// OnSuccessFnT
         {
             // NOP
         },
-        [](const GpException& aEx)//OnExceptionFnT
+        [](const GpException& aEx)// OnExceptionFnT
         {
             throw aEx;
-        },
-        100.0_si_ms
+        }
     );
+}
+
+std::string_view    GpService::Name (void) const noexcept
+{
+    return iName;
 }
 
 }// namespace GPlatform
