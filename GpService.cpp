@@ -27,7 +27,7 @@
 namespace GPlatform {
 
 GpService::SP               GpService::sServiceSP;
-std::mutex                  GpService::sServiceMutex;
+GpMutex                     GpService::sServiceMutex;
 GpConditionVarFlag          GpService::sServiceCondVar;
 std::atomic_flag            GpService::sIsStopRequested;
 volatile std::sig_atomic_t  GpService::sSignalReceived  = 0;
@@ -110,7 +110,7 @@ int GpService::SStartAndWaitForStop
 
         // --- Start ---
         {
-            std::scoped_lock lock(GpService::sServiceMutex);
+            GpUniqueLock<GpMutex> uniqueLock{GpService::sServiceMutex};
 
             VERIFY
             (

@@ -12,17 +12,19 @@ GpServiceArgBaseDesc::GpServiceArgBaseDesc (void) noexcept
 
 GpServiceArgBaseDesc::GpServiceArgBaseDesc (const GpServiceArgBaseDesc& aDesc):
 GpReflectObject{aDesc},
-background{GpReflectUtils::SCopyValue(aDesc.background)},
-log_level {GpReflectUtils::SCopyValue(aDesc.log_level)},
-cfg_file  {GpReflectUtils::SCopyValue(aDesc.cfg_file)}
+background    {GpReflectUtils::SCopyValue(aDesc.background)},
+log_level     {GpReflectUtils::SCopyValue(aDesc.log_level)},
+cfg_file      {GpReflectUtils::SCopyValue(aDesc.cfg_file)},
+resources_path{GpReflectUtils::SCopyValue(aDesc.resources_path)}
 {
 }
 
 GpServiceArgBaseDesc::GpServiceArgBaseDesc (GpServiceArgBaseDesc&& aDesc) noexcept:
 GpReflectObject{std::move(aDesc)},
-background{std::move(aDesc.background)},
-log_level {std::move(aDesc.log_level)},
-cfg_file  {std::move(aDesc.cfg_file)}
+background    {std::move(aDesc.background)},
+log_level     {std::move(aDesc.log_level)},
+cfg_file      {std::move(aDesc.cfg_file)},
+resources_path{std::move(aDesc.resources_path)}
 {
 }
 
@@ -35,6 +37,7 @@ void    GpServiceArgBaseDesc::_SReflectCollectProps (GpReflectProp::SmallVecVal&
     PROP(background);
     PROP(log_level);
     PROP(cfg_file);
+    PROP(resources_path);
 }
 
 }// namespace GPlatform

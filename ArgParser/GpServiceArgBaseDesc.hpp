@@ -22,11 +22,13 @@ public:
     bool                Background              (void) const noexcept {return background;}
     GpLogLevel::EnumT   LogLevel                (void) const noexcept {return log_level;}
     std::string_view    CfgFile                 (void) const noexcept {return cfg_file;}
+    std::string_view    ResourcesPath           (void) const noexcept {return resources_path;}
 
 private:
     bool                background  = false;
     GpLogLevel          log_level   = GpLogLevel::L_CRITICAL_ERROR;
     std::string         cfg_file;
+    std::string         resources_path;
 };
 
 }// namespace GPlatform

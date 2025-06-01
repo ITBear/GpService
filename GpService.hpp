@@ -92,7 +92,7 @@ private:
     GpTask::DoneFutureT::SP     iMainTaskDoneFuture;
 
     static GpService::SP                sServiceSP;
-    static std::mutex                   sServiceMutex;
+    static GpMutex                      sServiceMutex;
     static GpConditionVarFlag           sServiceCondVar;
     static std::atomic_flag             sIsStopRequested;
     static volatile std::sig_atomic_t   sSignalReceived;
