@@ -12,14 +12,8 @@ GpServiceArgParser::ResT    GpServiceArgParser::SParse
     const GpServiceArgBaseDescFactory&  aFactory
 )
 {
-    auto [descSP, isEnableUnknownArguments] = aFactory.NewInstance(aArgc, aArgv);
-
-    GpArgParser argParser;
-
-    if (isEnableUnknownArguments)
-    {
-        argParser.EnableUnknownArguments();
-    }
+    GpServiceArgBaseDesc::SP    descSP = aFactory.NewInstance(aArgc, aArgv);
+    GpArgParser                 argParser;
 
     SInitArgParser(descSP.V(), argParser);
     GpArgParserRes::SP argParserResSP = SParse(aArgc, aArgv, argParser, descSP.V());
@@ -89,15 +83,15 @@ GpArgParserRes::SP  GpServiceArgParser::SParse
         // Try to find argument by name
         auto argIter = std::find_if
         (
-            argParserRes.Arguments().begin(),
-            argParserRes.Arguments().end(),
+            std::begin(argParserRes.Arguments()),
+            std::end(argParserRes.Arguments()),
             [propName](const auto& aValue)
             {
                 return aValue.V().Names().count(propName) > 0;
             }
         );
 
-        if (argIter == argParserRes.Arguments().end())
+        if (argIter == std::end(argParserRes.Arguments()))
         {
             continue;
         }

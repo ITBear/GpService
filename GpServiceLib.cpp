@@ -1,7 +1,10 @@
 #include <GpService/GpServiceLib.hpp>
+#include <GpCore2/GpUtils/Other/GpLinkedLibsInfo.hpp>
 
-namespace GPlatform {
+GP_STATIC_INITIALIZER_IMPL(GpService)
+GP_LIB_REGISTRATOR(GpServiceLib)
 
-GP_IMPLEMENT_LIB_REGISTRATOR(GpServiceLib)
-
-}// namespace GPlatform
+void    GpService_StaticInitializer::OnInitialize (void)
+{
+    GpServiceLib::SRegisterSelf();
+}

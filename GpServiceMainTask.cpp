@@ -3,13 +3,7 @@
 
 namespace GPlatform {
 
-GpServiceMainTask::GpServiceMainTask
-(
-    const GpServiceArgBaseDesc& aServiceArgsDesc,
-    const GpServiceCfgBaseDesc& aServiceCfgDesc
-) noexcept:
-iServiceArgsDesc{aServiceArgsDesc},
-iServiceCfgDesc {std::move(aServiceCfgDesc)}
+GpServiceMainTask::GpServiceMainTask (void) noexcept
 {
 }
 

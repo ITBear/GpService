@@ -15,8 +15,7 @@ protected:
 public:
     virtual                         ~GpServiceMainTaskFactory   (void) noexcept = default;
 
-    virtual GpServiceMainTask::SP   NewInstance                 (const GpServiceArgBaseDesc& aServiceArgsDesc,
-                                                                 const GpServiceCfgBaseDesc& aServiceCfgDesc) const = 0;
+    virtual GpServiceMainTask::SP   NewInstance                 (void) const = 0;
 };
 
 }// namespace GPlatform
